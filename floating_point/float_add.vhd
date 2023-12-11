@@ -13,6 +13,11 @@
 -- 1.1  A. Thornton  2023-12-10 Changed Licensing, fixed error due to if
 --                              statement prioritisation order in VHDL in the
 --                              renormalisation process
+-- 1.2  A. Thornton  2023-12-10 Amended issue where integer is added for zero
+--                              numbers. Furthermore added check that if
+--                              the value is 0, dont look to bitshift to bring
+--                              into the range of 1.0<=X<2,
+--                              as this is impossible
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -71,16 +76,15 @@ begin
   b_sign <= b_i(31);
   a_exp  <= unsigned(a_i(30 downto 23));
   b_exp  <= unsigned(b_i(30 downto 23));
-  a_mand <= unsigned('1' & a_i(22 downto  0));
-  b_mand <= unsigned('1' & b_i(22 downto  0));
 
   -- first part of the process is to decide which is bigger,
   -- and then adjust the other
+  -- first clock cycle
   max_exp_decide : process(clk_i)
   begin
     if rising_edge(clk_i) then
       if a_exp = b_exp then
-        if a_mand > b_mand then
+        if a_i > b_i then
           is_mod_a_bigger(0) <= '1';
         else
           is_mod_a_bigger(0) <= '0';
@@ -95,6 +99,30 @@ begin
       end if;
     end if;
   end process max_exp_decide;
+
+  -- This process ensures that zero is entered properly,
+  -- When the mantissa and exponent are not zero, the integer part of "1" in
+  -- the 1.X is added.
+  -- When they are both zero the it is 0.x or 0.0
+  zero_or_non_zero_select : process(clk_i)
+    constant EXP_AND_MANT_ZEROS : std_logic_vector(30 downto 0) := (others => '0');
+    constant MAND_ZEROS         : unsigned(23 downto 0) := to_unsigned(0,24);
+  begin
+    if rising_edge(clk_i) then
+      if (a_i(30 downto 0) = EXP_AND_MANT_ZEROS) then
+        a_mand <= MAND_ZEROS;
+      else
+        a_mand <= unsigned('1' & a_i(22 downto  0));
+      end if;
+
+      if (b_i(30 downto 0) = EXP_AND_MANT_ZEROS) then
+        b_mand <= MAND_ZEROS;
+      else
+        b_mand <= unsigned('1' & b_i(22 downto  0));
+      end if;
+    end if;
+  end process zero_or_non_zero_select;
+
 
   -- next part is to bitshift smaller number to be in the same
   -- ball park as the bigger number
@@ -168,10 +196,14 @@ begin
   -- ie 1.27*2^x
   -- unless the number is extremely small and there is no further exponent range
   re_normalise_proc : process(clk_i)
+    constant ZERO_MANT : unsigned(25 downto 0) := (others => '0');
   begin
     if rising_edge(clk_i) then
       result_sign_final <= result_sign;
-      if result_mand_unshifted(25) = '1' then
+      if result_mand_unshifted(25 downto 0) = ZERO_MANT then
+        result_exp_shifted  <= result_exp;
+        result_mand_shifted <= result_mand_unshifted;
+      elsif result_mand_unshifted(25) = '1' then
         --bitgrowth has occurred and we need to shift the exponent or divide by 2
         result_exp_shifted  <= result_exp + 1;
         result_mand_shifted <= shift_right(result_mand_unshifted,1);

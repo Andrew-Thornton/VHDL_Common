@@ -11,6 +11,8 @@
 -- Rev  Author        Description
 -- 1.0  A. Thornton   Testbench Creation
 -- 1.1  A. Thornton   Increased test cases to 4
+-- 1.2  A. Thornton   Increased test cases, added zero test cases
+--                    Changed common test to a procedure to neaten code
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -57,6 +59,38 @@ architecture test_bench of float_add_tb is
   --expected output
   signal tb_expect : real;
 
+  procedure run_basic_test_case(
+    signal tb_clk        : in std_logic;
+    constant test_case_num : in natural;
+    constant input_a       : in real;
+    constant input_b       : in real;
+    signal tb_a          : out std_logic_vector(31 downto 0);
+    signal tb_b          : out std_logic_vector(31 downto 0)
+  ) is
+    variable proc_expect : real;
+    variable proc_output : real;
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= real_to_slv(input_a);
+    tb_b   <= real_to_slv(input_b);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    proc_expect := input_a + input_b;
+    proc_output := slv_to_real(tb_c);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :" & real'image(proc_expect);
+    report "DUT Output         :" & real'image(proc_output);
+    assert tb_c = real_to_slv(proc_expect)
+    report "test failed"
+    severity failure;
+    report "test passed";
+  end procedure run_basic_test_case;
+
 begin
 
   dut : float_add
@@ -91,95 +125,46 @@ begin
     wait until tb_srst = '0';
 
     --test case 1 -- adding two positive numbers
-    a_real <= 0.15625;
-    b_real <= 0.3125;
-    wait for CLOCK_HOLD;
-    tb_a   <= real_to_slv(a_real);
-    tb_b   <= real_to_slv(b_real);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait for CLOCK_HOLD;
-    tb_expect <= a_real + b_real;
-    c_real    <= slv_to_real(tb_c);
-    wait for CLOCK_HOLD;
-    report "Test case 1";
-    report "Expected Value was :" & real'image(tb_expect);
-    report "DUT Output         :" & real'image(c_real);
-    assert tb_c = real_to_slv(tb_expect)
-    report "test failed"
-    severity failure;
-    report "test passed";
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 1, input_a => 0.15625, input_b => 0.3125, tb_a => tb_a , tb_b => tb_b);
 
     --test case 2 -- adding two negative numbers
-    wait for CLOCK_HOLD;
-    a_real <= -0.15625;
-    b_real <= -0.3125;
-    wait for CLOCK_HOLD;
-    tb_a   <= real_to_slv(a_real);
-    tb_b   <= real_to_slv(b_real);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait for CLOCK_HOLD;
-    tb_expect <= a_real + b_real;
-    c_real    <= slv_to_real(tb_c);
-    wait for CLOCK_HOLD;
-    report "Test case 2";
-    report "Expected Value was :" & real'image(tb_expect);
-    report "DUT Output         :" & real'image(c_real);
-    assert tb_c = real_to_slv(tb_expect)
-    report "test failed"
-    severity failure;
-    report "test passed";
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 2, input_a => -0.15625, input_b => -0.3125, tb_a => tb_a , tb_b => tb_b);
 
-    --test case 3 -- adding one positive and one negative numbers
-    wait for CLOCK_HOLD;
-    a_real <= 0.15625;
-    b_real <= -0.3125;
-    wait for CLOCK_HOLD;
-    tb_a   <= real_to_slv(a_real);
-    tb_b   <= real_to_slv(b_real);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait for CLOCK_HOLD;
-    tb_expect <= a_real + b_real;
-    c_real    <= slv_to_real(tb_c);
-    wait for CLOCK_HOLD;
-    report "Test case 3";
-    report "Expected Value was :" & real'image(tb_expect);
-    report "DUT Output         :" & real'image(c_real);
-    assert tb_c = real_to_slv(tb_expect)
-    report "test failed"
-    severity failure;
-    report "test passed";
+    --test case 3 -- adding one positive and one negative number
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 3, input_a => 0.15625, input_b => -0.3125, tb_a => tb_a , tb_b => tb_b);
 
-    --test case 4 -- adding two negative numbers
-    wait for CLOCK_HOLD;
-    a_real <= -0.15625;
-    b_real <= 0.3125;
-    wait for CLOCK_HOLD;
-    tb_a   <= real_to_slv(a_real);
-    tb_b   <= real_to_slv(b_real);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait for CLOCK_HOLD;
-    tb_expect <= a_real + b_real;
-    c_real    <= slv_to_real(tb_c);
-    wait for CLOCK_HOLD;
-    report "Test case 4";
-    report "Expected Value was :" & real'image(tb_expect);
-    report "DUT Output         :" & real'image(c_real);
-    assert tb_c = real_to_slv(tb_expect)
-    report "test failed"
+    --test case 4 -- adding one positive and one negative number
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 4, input_a => -0.15625, input_b => 0.3125, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 5 -- adding two positive numbers
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 5, input_a => 0.3125, input_b => 0.15625, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 6 -- adding two negative numbers
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 6, input_a => -0.3125, input_b => -0.15625, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 7 -- adding one positive and one negative number
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 7, input_a => -0.3125, input_b => 0.15625, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 8 -- adding one positive and one negative number
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 8, input_a => 0.3125, input_b => -0.15625, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 9 -- two zeros
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 9, input_a => 0.0, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 10 -- zero and positive
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 10, input_a => 0.0, input_b => 0.125, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 11 -- zero and negative
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 11, input_a => 0.0, input_b => 15.875, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 12 -- positive and zero
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 12, input_a => 0.00048, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 13 -- negative and zero
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 13, input_a => -100000.0, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    report "Testing Complete, all passed"
     severity failure;
-    report "test passed";
 
     wait;
 
