@@ -14,6 +14,7 @@
 -- 1.2  A. Thornton   Increased test cases, added zero test cases
 --                    Changed common test to a procedure to neaten code
 -- 1.3  A. Thornton   Added some NaN tests
+-- 1.4  A. Thornton   Added more Inf and -Inf test cases
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -80,13 +81,23 @@ architecture test_bench of float_add_tb is
     proc_expect := input_a + input_b;
     proc_output := slv_to_real(tb_c);
     wait for CLOCK_HOLD;
-    report "Test case " & integer'image(test_case_num);
-    report "Expected Value was :" & real'image(proc_expect);
-    report "DUT Output         :" & real'image(proc_output);
-    assert tb_c = real_to_slv(proc_expect)
-    report "test failed"
-    severity failure;
-    report "test passed";
+    if proc_expect = 0.0 then
+      report "Test case " & integer'image(test_case_num);
+      report "Expected Value was :" & real'image(proc_expect);
+      report "DUT Output         :" & real'image(proc_output);
+      assert tb_c = real_to_slv(proc_expect) or (not(tb_c(31)) & tb_c(30 downto 0)) = real_to_slv(proc_expect) -- +/- 0.0
+      report "test failed"
+      severity failure;
+      report "test passed";
+    else
+      report "Test case " & integer'image(test_case_num);
+      report "Expected Value was :" & real'image(proc_expect);
+      report "DUT Output         :" & real'image(proc_output);
+      assert tb_c = real_to_slv(proc_expect)
+      report "test failed"
+      severity failure;
+      report "test passed";
+    end if;
   end procedure run_basic_test_case;
 
   procedure run_nan_test_case_input_b(
@@ -315,6 +326,184 @@ architecture test_bench of float_add_tb is
     report "test passed";
   end procedure run_inf_nan_test_case;
 
+  procedure run_inf_test_case_input_b(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    constant input_b       : in real;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"000000";
+    tb_b   <= real_to_slv(input_b);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_inf_test_case_input_b;
+
+  procedure run_inf_test_case_input_a(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    constant input_a       : in real;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= real_to_slv(input_a);
+    tb_b   <= '0' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_inf_test_case_input_a;
+
+  procedure run_ninf_test_case_input_b(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    constant input_b       : in real;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '1' & x"FF" & 23x"000000";
+    tb_b   <= real_to_slv(input_b);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :-Inf";
+    assert (tb_c(31) = '1') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :-Inf";
+    report "test passed";
+  end procedure run_ninf_test_case_input_b;
+
+  procedure run_ninf_test_case_input_a(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    constant input_a       : in real;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= real_to_slv(input_a);
+    tb_b   <= '1' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :-Inf";
+    assert (tb_c(31) = '1') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :-Inf";
+    report "test passed";
+  end procedure run_ninf_test_case_input_a;
+
+  procedure run_ninf_ninf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '1' & x"FF" & 23x"000000";
+    tb_b   <= '1' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :-Inf";
+    assert (tb_c(31) = '1') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :-Inf";
+    report "test passed";
+  end procedure run_ninf_ninf_test_case;
+
+  procedure run_inf_inf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"000000";
+    tb_b   <= '0' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_inf_inf_test_case;
+
 begin
 
   dut : float_add
@@ -428,6 +617,72 @@ begin
 
     --test case 27 -- trying to make 0 again
     run_basic_test_case(tb_clk => tb_clk, test_case_num => 27, input_a => 1000.0, input_b => -1000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 28 -- +inf and numbers
+    run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 28, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 29 -- +inf and numbers
+    run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 29, input_b =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 30 -- +inf and numbers
+    run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 30, input_b => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 31 -- +inf and numbers
+    run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 31, input_b => -4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 32 -- +inf and numbers
+    run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 32, input_b => 4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 33 -- +inf and numbers
+    run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 33, input_a => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 34 -- +inf and numbers
+    run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 34, input_a =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 35 -- +inf and numbers
+    run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 35, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 36 -- +inf and numbers
+    run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 36, input_a => -4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 37 -- +inf and numbers
+    run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 37, input_a => 4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 38 -- +inf and numbers
+    run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 38, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 39 -- +inf and numbers
+    run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 39, input_b =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 40 -- -inf and numbers
+    run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 40, input_b => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 41 -- -inf and numbers
+    run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 41, input_b => -4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 42 -- -inf and numbers
+    run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 42, input_b => 4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 43 -- -inf and numbers
+    run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 43, input_a => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 44 -- -inf and numbers
+    run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 44, input_a =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 45 -- -inf and numbers
+    run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 45, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 46 -- -inf and numbers
+    run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 46, input_a => -4.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 47 -- -inf and numbers
+    run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 47, input_a => 4.0, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 48 +inf and +inf = +inf
+    run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 48, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 49 -inf and -inf = -inf
+    run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 49, tb_a => tb_a , tb_b => tb_b);
 
     report "Testing Complete, all passed"
     severity failure;
