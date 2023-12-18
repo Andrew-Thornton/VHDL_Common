@@ -18,10 +18,12 @@
 --                              the value is 0, dont look to bitshift to bring
 --                              into the range of 1.0<=X<2,
 --                              as this is impossible
--- 1.3  A. Thornton  2023-18-10 Added in NaN and Inf support.
---                              Ammended error where wrong signal was used in
+-- 1.3  A. Thornton  2023-12-18 Added in NaN and Inf support.
+--                              Amended error where wrong signal was used in
 --                              deciding the bigger modulus in clock cycle 1
 --                              Added subnormal number support
+-- 1.4  A. Thornton  2023-12-18 Amended error when result from subtraction is
+--                              zero
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -240,27 +242,28 @@ begin
   -- ie 1.27*2^x
   -- unless the number is extremely small and there is no further exponent range
   re_normalise_proc : process(clk_i)
-    constant NAN_OR_INF_EXP : std_logic_vector( 7 downto 0) := x"FF";
-    constant NAN_MANT       : std_logic_vector(25 downto 0 ):= 25x"0000001" & '0'; --snan
-    constant INF_MANT       : std_logic_vector(25 downto 0 ):= 26x"0000000";
-    constant ZERO_MANT      : unsigned(25 downto 0) := (others => '0');
+    constant NAN_INF_EXP : std_logic_vector( 7 downto 0) := x"FF";
+    constant NAN_MANT    : std_logic_vector(25 downto 0 ):= 26x"0000002"; --snan
+    constant INF_MANT    : std_logic_vector(25 downto 0 ):= 26x"0000000";
+    constant ZERO_EXP    : unsigned( 7 downto 0) := to_unsigned(0, 8);
+    constant ZERO_MANT   : unsigned(25 downto 0) := to_unsigned(0,26);
   begin
     if rising_edge(clk_i) then
       result_sign_final <= result_sign;
       if nan_detected(2) = '1' then
-        result_exp_shifted  <= unsigned(NAN_OR_INF_EXP);
+        result_exp_shifted  <= unsigned(NAN_INF_EXP);
         result_mand_shifted <= unsigned(NAN_MANT);
       elsif inf_detected(2) = '1' then
-        result_exp_shifted  <= unsigned(NAN_OR_INF_EXP);
+        result_exp_shifted  <= unsigned(NAN_INF_EXP);
         result_mand_shifted <= unsigned(INF_MANT);
       elsif result_mand_unshifted(25 downto 0) = ZERO_MANT then
-        result_exp_shifted  <= result_exp;
-        result_mand_shifted <= result_mand_unshifted;
+        result_exp_shifted  <= ZERO_EXP;
+        result_mand_shifted <= ZERO_MANT;
       elsif result_mand_unshifted(25) = '1' then
-        --bitgrowth has occurred and we need to shift the exponent or divide by 2
+        --bitgrowth occurred and we need to shift the exponent or divide by 2
         result_exp_shifted  <= result_exp + 1;
         result_mand_shifted <= shift_right(result_mand_unshifted,1);
-      elsif result_mand_unshifted(24) = '1' then --result is 1.something or 1<=X<2
+      elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
         result_exp_shifted  <= result_exp;
         result_mand_shifted <= result_mand_unshifted;
       else

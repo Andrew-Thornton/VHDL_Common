@@ -48,9 +48,7 @@ architecture test_bench of float_add_tb is
   signal tb_srst   : std_logic := '1';
 
   --tb inputs
-  signal a_real    : real := 0.0;
   signal tb_a      : std_logic_vector(31 downto 0) := (others => '0');
-  signal b_real    : real := 0.0;
   signal tb_b      : std_logic_vector(31 downto 0) := (others => '0');
 
   --tb outputs
@@ -149,6 +147,174 @@ architecture test_bench of float_add_tb is
     report "test passed";
   end procedure run_nan_test_case_input_a;
 
+  procedure run_nan_nan_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"4ccccc";
+    tb_b   <= '0' & x"FF" & 23x"4ccccc";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_nan_test_case;
+
+  procedure run_ninf_pinf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '1' & x"FF" & 23x"000000";
+    tb_b   <= '0' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_ninf_pinf_test_case;
+
+  procedure run_ninf_nan_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '1' & x"FF" & 23x"000000";
+    tb_b   <= '0' & x"FF" & 23x"4ccccc";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_ninf_nan_test_case;
+
+  procedure run_nan_ninf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"4ccccc";
+    tb_b   <= '1' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_ninf_test_case;
+
+  procedure run_nan_inf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"4ccccc";
+    tb_b   <= '0' & x"FF" & 23x"000000";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_inf_test_case;
+
+  procedure run_inf_nan_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"000000";
+    tb_b   <= '0' & x"FF" & 23x"4ccccc";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_inf_nan_test_case;
+
 begin
 
   dut : float_add
@@ -238,6 +404,30 @@ begin
 
     -- test case 19 -- NAN test
     run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 19, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 20 -- NaN + NaN
+    run_nan_nan_test_case(tb_clk => tb_clk, test_case_num => 20, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 21 -- -Inf + Inf
+    run_ninf_pinf_test_case(tb_clk => tb_clk, test_case_num => 21, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 22 -- -Inf + NaN
+    run_ninf_nan_test_case(tb_clk => tb_clk, test_case_num => 22, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 23 -- + NaN - Inf
+    run_nan_ninf_test_case(tb_clk => tb_clk, test_case_num => 23, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 24 -- inf + NaN
+    run_inf_nan_test_case(tb_clk => tb_clk, test_case_num => 24, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 25 -- NaN + inf
+    run_nan_inf_test_case(tb_clk => tb_clk, test_case_num => 25, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 26 -- trying to make 0 again
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 26, input_a => 64.0, input_b => -64.0, tb_a => tb_a , tb_b => tb_b);
+
+    --test case 27 -- trying to make 0 again
+    run_basic_test_case(tb_clk => tb_clk, test_case_num => 27, input_a => 1000.0, input_b => -1000.0, tb_a => tb_a , tb_b => tb_b);
 
     report "Testing Complete, all passed"
     severity failure;
