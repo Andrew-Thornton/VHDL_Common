@@ -13,6 +13,7 @@
 -- 1.1  A. Thornton   Increased test cases to 4
 -- 1.2  A. Thornton   Increased test cases, added zero test cases
 --                    Changed common test to a procedure to neaten code
+-- 1.3  A. Thornton   Added some NaN tests
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -54,18 +55,17 @@ architecture test_bench of float_add_tb is
 
   --tb outputs
   signal tb_c      : std_logic_vector(31 downto 0);
-  signal c_real    : real;
 
   --expected output
   signal tb_expect : real;
 
   procedure run_basic_test_case(
-    signal tb_clk        : in std_logic;
+    signal tb_clk          : in std_logic;
     constant test_case_num : in natural;
     constant input_a       : in real;
     constant input_b       : in real;
-    signal tb_a          : out std_logic_vector(31 downto 0);
-    signal tb_b          : out std_logic_vector(31 downto 0)
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
   ) is
     variable proc_expect : real;
     variable proc_output : real;
@@ -90,6 +90,64 @@ architecture test_bench of float_add_tb is
     severity failure;
     report "test passed";
   end procedure run_basic_test_case;
+
+  procedure run_nan_test_case_input_b(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    constant input_b       : in real;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FF" & 23x"4ccccc";
+    tb_b   <= real_to_slv(input_b);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_test_case_input_b;
+
+  procedure run_nan_test_case_input_a(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    constant input_a       : in real;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    tb_a   <= real_to_slv(input_a);
+    tb_b   <= '0' & x"FF" & 23x"4ccccc";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_test_case_input_a;
 
 begin
 
@@ -162,6 +220,24 @@ begin
 
     -- test case 13 -- negative and zero
     run_basic_test_case(tb_clk => tb_clk, test_case_num => 13, input_a => -100000.0, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 14 -- NAN test
+    run_nan_test_case_input_b(tb_clk => tb_clk, test_case_num => 14, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 15 -- NAN test
+    run_nan_test_case_input_b(tb_clk => tb_clk, test_case_num => 15, input_b =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 16 -- NAN test
+    run_nan_test_case_input_b(tb_clk => tb_clk, test_case_num => 16, input_b => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 17 -- NAN test
+    run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 17, input_a => 0.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 18 -- NAN test
+    run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 18, input_a =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 19 -- NAN test
+    run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 19, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
 
     report "Testing Complete, all passed"
     severity failure;

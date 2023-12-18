@@ -1,6 +1,10 @@
+**/modelsim.ini
+**/vlog.opt
+
 
 logic/vsim.wlf
 logic/work/*
 
 floating_point/vsim.wlf
 floating_point/work/*
+floating_point/wlft*
