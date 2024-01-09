@@ -19,6 +19,7 @@
 -- 1.3  A. Thornton   Added some NaN tests
 -- 1.4  A. Thornton   Added more Inf and -Inf test cases
 -- 1.5  A. Thornton   Added test cases for overflow into +/- Inf
+-- 1.6  A. Thornton   Added subnormal number test cases
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -562,9 +563,67 @@ architecture test_bench of float_add_tb is
            (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
     report "test failed"
     severity failure;
-    report "DUT Output         :Inf";
+    report "DUT Output         :-Inf";
     report "test passed";
   end procedure run_large_negative_to_ninf_test_case;
+
+  procedure run_subnormal_test_case_1(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"00";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000002";
+  begin
+    -- adding two positive sub normal numbers which result in a subnormal number
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"00" & 23x"000001"; -- 1.4012984643 x 10^-45
+    tb_b   <= '0' & x"00" & 23x"000001"; -- 1.4012984643 x 10^-45
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was : 2.8025969286 x 10^-45";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :2.8025969286 x 10^-45";
+    report "test passed";
+  end procedure run_subnormal_test_case_1;
+
+  procedure run_subnormal_test_case_2(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"01";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"7FFFFE";
+  begin
+    -- adding two sub normal numbers which result in a normal number
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"00" & 23x"7FFFFF"; -- 1.1754942107 x 10^-38
+    tb_b   <= '0' & x"00" & 23x"7FFFFF"; -- 1.1754942107 x 10^-38
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was : 2.3509887016 x 10^-38";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :2.3509887016 x 10^-38";
+    report "test passed";
+  end procedure run_subnormal_test_case_2;
 
 begin
 
@@ -740,17 +799,23 @@ begin
     -- test case 47 -- -inf and numbers
     run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 47, input_a => 4.0, tb_a => tb_a , tb_b => tb_b);
 
-    -- test case 48 +inf and +inf = +inf
+    -- test case 48 -- +inf and +inf = +inf
     run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 48, tb_a => tb_a , tb_b => tb_b);
 
-    -- test case 49 -inf and -inf = -inf
+    -- test case 49 -- -inf and -inf = -inf
     run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 49, tb_a => tb_a , tb_b => tb_b);
 
-    -- test case 50 3.4028234664 × 10^38 + 3.4028234664 × 10^38 = +inf
+    -- test case 50 -- 3.4028234664 x 10^38 + 3.4028234664 x 10^38 = +inf
     run_large_positive_to_inf_test_case(tb_clk => tb_clk, test_case_num => 50, tb_a => tb_a , tb_b => tb_b);
 
-    -- test case 51 -3.4028234664 × 10^38 + -3.4028234664 × 10^38 = -inf
-    run_large_negative_to_ninf_test_case(tb_clk => tb_clk, test_case_num => 50, tb_a => tb_a , tb_b => tb_b);
+    -- test case 51 -- -3.4028234664 x 10^38 + -3.4028234664 x 10^38 = -inf
+    run_large_negative_to_ninf_test_case(tb_clk => tb_clk, test_case_num => 51, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 52 -- 1.4012984643 × 10^-45 + 1.4012984643 × 10^-45 = 2.8 x 10^-45
+    run_subnormal_test_case_1(tb_clk => tb_clk, test_case_num => 52, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 53 -- 1.1754942107 x 10^-38 + 1.1754942107 x 10^-38 = -- 2.3509887016 x 10^-38
+    run_subnormal_test_case_2(tb_clk => tb_clk, test_case_num => 53, tb_a => tb_a , tb_b => tb_b);
 
     report "Testing Complete, all passed"
     severity failure;

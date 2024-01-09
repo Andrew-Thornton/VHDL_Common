@@ -25,6 +25,9 @@
 -- 1.4  A. Thornton  2023-12-18 Amended error when result from subtraction is
 --                              zero
 -- 1.5  A. Thornton  2024-01-08 Fixed handling of overflow into +/- infinity
+-- 1.6  A. Thornton  2024-01-08 Fixed handling of subnormal numbers and 
+--                              subnormal number overflow into the normal
+--                              number range
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -244,12 +247,13 @@ begin
   -- ie 1.27*2^x
   -- unless the number is extremely small and there is no further exponent range
   re_normalise_proc : process(clk_i)
-    constant NAN_INF_EXP : std_logic_vector( 7 downto 0) := x"FF";
-    constant NAN_MANT    : std_logic_vector(25 downto 0 ):= 26x"0000002"; --snan
-    constant INF_MANT    : std_logic_vector(25 downto 0 ):= 26x"0000000";
-    constant ZERO_EXP    : unsigned( 7 downto 0) := to_unsigned(0, 8);
-    constant ZERO_MANT   : unsigned(25 downto 0) := to_unsigned(0,26);
-    constant MAX_EXP     : std_logic_vector(7 downto 0) := x"FE";
+    constant NAN_INF_EXP     : std_logic_vector( 7 downto 0) := x"FF";
+    constant NAN_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000002"; --snan
+    constant INF_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000000";
+    constant ZERO_EXP        : unsigned( 7 downto 0) := to_unsigned(0, 8);
+    constant ZERO_MANT       : unsigned(25 downto 0) := to_unsigned(0,26);
+    constant MAX_EXP         : std_logic_vector(7 downto 0) := x"FE";
+    constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := "00111111111111111111111110"; --2 int --24 frac
   begin
     if rising_edge(clk_i) then
       result_sign_final <= result_sign;
@@ -271,10 +275,20 @@ begin
           result_exp_shifted  <= unsigned(NAN_INF_EXP);
           result_mand_shifted <= unsigned(INF_MANT);
         end if;
+      elsif result_exp = ZERO_EXP then
+        -- is a subnormal number of 0
+        -- normally dont bit shift
+        result_exp_shifted  <= ZERO_EXP;
+        result_mand_shifted <= result_mand_unshifted;
+        -- if has breaked out into normal numbers adjust accordingly
+        if result_mand_unshifted(24) = '1' then
+          result_exp_shifted  <= to_unsigned(1,8);
+          result_mand_shifted <= result_mand_unshifted;
+        end if;
       elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
         result_exp_shifted  <= result_exp;
         result_mand_shifted <= result_mand_unshifted;
-      else
+      else --normal number and bitshiting required
         for i in 1 to 24 loop
           if result_mand_unshifted(i) = '1' then
             result_exp_shifted  <= result_exp - (24-i);
