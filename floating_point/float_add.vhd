@@ -24,6 +24,7 @@
 --                              Added subnormal number support
 -- 1.4  A. Thornton  2023-12-18 Amended error when result from subtraction is
 --                              zero
+-- 1.5  A. Thornton  2024-01-08 Fixed handling of overflow into +/- infinity
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -91,7 +92,7 @@ begin
   a_frac <= unsigned(a_i(22 downto  0));
   b_frac <= unsigned(b_i(22 downto  0));
 
-  -- first part of the process is to decide which is modulus is bigger,
+  -- first part of the process is to decide which modulus is bigger,
   -- first clock cycle
   max_exp_decide : process(clk_i)
   begin
@@ -134,8 +135,8 @@ begin
     end if;
   end process zero_or_non_zero_select;
 
-  -- this process checks for Nan and places the detection into a shift register
-  -- for later use
+  -- this process checks for Nan and Inf
+  -- and places the detection into a shift register for later use
   -- first clock cycle
   nan_detection : process(clk_i)
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
@@ -195,6 +196,7 @@ begin
   -- sign extend so that it allows for bit growth in addition
   a_mand_bitshifted_se <= unsigned('0' & std_logic_vector(a_mand_bitshifted));
   b_mand_bitshifted_se <= unsigned('0' & std_logic_vector(b_mand_bitshifted));
+
   -- next step is to perform the maths now that the numbers both have the
   -- same exponent
   math_process : process(clk_i)
@@ -247,6 +249,7 @@ begin
     constant INF_MANT    : std_logic_vector(25 downto 0 ):= 26x"0000000";
     constant ZERO_EXP    : unsigned( 7 downto 0) := to_unsigned(0, 8);
     constant ZERO_MANT   : unsigned(25 downto 0) := to_unsigned(0,26);
+    constant MAX_EXP     : std_logic_vector(7 downto 0) := x"FE";
   begin
     if rising_edge(clk_i) then
       result_sign_final <= result_sign;
@@ -260,9 +263,14 @@ begin
         result_exp_shifted  <= ZERO_EXP;
         result_mand_shifted <= ZERO_MANT;
       elsif result_mand_unshifted(25) = '1' then
-        --bitgrowth occurred and we need to shift the exponent or divide by 2
+        -- bitgrowth occurred and we need to shift the exponent or divide by 2
+        -- unless infinity was reached
         result_exp_shifted  <= result_exp + 1;
         result_mand_shifted <= shift_right(result_mand_unshifted,1);
+        if MAX_EXP = std_logic_vector(result_exp) then
+          result_exp_shifted  <= unsigned(NAN_INF_EXP);
+          result_mand_shifted <= unsigned(INF_MANT);
+        end if;
       elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
         result_exp_shifted  <= result_exp;
         result_mand_shifted <= result_mand_unshifted;
@@ -277,7 +285,7 @@ begin
     end if;
   end process re_normalise_proc;
 
-  --output mapping
+  -- output mapping
   c_o(31)           <= result_sign_final;
   c_o(30 downto 23) <= std_logic_vector(result_exp_shifted);
   c_o(22 downto  0) <= std_logic_vector(result_mand_shifted(23 downto 1));

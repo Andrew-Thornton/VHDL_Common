@@ -8,6 +8,9 @@
 -- Creation Date : 2023-Dec-09
 -- Standard      : VDHL 2008
 -------------------------------------------------------------------------------
+-- This testbench is designed to test all unique cases that could occur during
+-- a floating point addition, including NaN and +/- Inf cases
+-------------------------------------------------------------------------------
 -- Rev  Author        Description
 -- 1.0  A. Thornton   Testbench Creation
 -- 1.1  A. Thornton   Increased test cases to 4
@@ -15,6 +18,7 @@
 --                    Changed common test to a procedure to neaten code
 -- 1.3  A. Thornton   Added some NaN tests
 -- 1.4  A. Thornton   Added more Inf and -Inf test cases
+-- 1.5  A. Thornton   Added test cases for overflow into +/- Inf
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -504,6 +508,64 @@ architecture test_bench of float_add_tb is
     report "test passed";
   end procedure run_inf_inf_test_case;
 
+  procedure run_large_positive_to_inf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+    -- adding two positive numbers which should overflow into infinity
+    wait for CLOCK_HOLD;
+    tb_a   <= '0' & x"FE" & 23x"7FFFFF";
+    tb_b   <= '0' & x"FE" & 23x"7FFFFF";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_large_positive_to_inf_test_case;
+
+  procedure run_large_negative_to_ninf_test_case(
+    signal tb_clk          : in std_logic;
+    constant test_case_num : in natural;
+    signal tb_a            : out std_logic_vector(31 downto 0);
+    signal tb_b            : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+    -- adding two positive numbers which should overflow into infinity
+    wait for CLOCK_HOLD;
+    tb_a   <= '1' & x"FE" & 23x"7FFFFF";
+    tb_b   <= '1' & x"FE" & 23x"7FFFFF";
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :-Inf";
+    assert (tb_c(31) = '1') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_large_negative_to_ninf_test_case;
+
 begin
 
   dut : float_add
@@ -678,11 +740,17 @@ begin
     -- test case 47 -- -inf and numbers
     run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 47, input_a => 4.0, tb_a => tb_a , tb_b => tb_b);
 
-    --test case 48 +inf and +inf = +inf
+    -- test case 48 +inf and +inf = +inf
     run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 48, tb_a => tb_a , tb_b => tb_b);
 
-    --test case 49 -inf and -inf = -inf
+    -- test case 49 -inf and -inf = -inf
     run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 49, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 50 3.4028234664 × 10^38 + 3.4028234664 × 10^38 = +inf
+    run_large_positive_to_inf_test_case(tb_clk => tb_clk, test_case_num => 50, tb_a => tb_a , tb_b => tb_b);
+
+    -- test case 51 -3.4028234664 × 10^38 + -3.4028234664 × 10^38 = -inf
+    run_large_negative_to_ninf_test_case(tb_clk => tb_clk, test_case_num => 50, tb_a => tb_a , tb_b => tb_b);
 
     report "Testing Complete, all passed"
     severity failure;

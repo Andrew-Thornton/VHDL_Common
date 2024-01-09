@@ -11,10 +11,8 @@
 ## Rev  Author        Description
 ## 1.0  A. Thornton   Do file Creation
 ## 1.1  A. Thornton   Added more waves for viewing, changed licensing
+## 1.2  A. Thornton   Removed commented code
 ###############################################################################
-
-#vlib dummy_ieee
-#vcom -2008 ../1076-2008_downloads/1076-2008_machine-readable/ieee/float_generic_pkg.vhdl
 
 vlib work
 vcom -2008 ./common_float_tools_pkg.vhd
