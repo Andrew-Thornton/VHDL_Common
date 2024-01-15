@@ -25,9 +25,16 @@
 -- 1.4  A. Thornton  2023-12-18 Amended error when result from subtraction is
 --                              zero
 -- 1.5  A. Thornton  2024-01-08 Fixed handling of overflow into +/- infinity
--- 1.6  A. Thornton  2024-01-08 Fixed handling of subnormal numbers and 
+-- 1.6  A. Thornton  2024-01-08 Fixed handling of subnormal numbers and
 --                              subnormal number overflow into the normal
 --                              number range
+-- 1.7  A. Thornton  2024-01-14 Fixed errors which resulted in the code not
+--                              being able to have a continous input stream
+--                              where there was an error in not shift
+--                              registering the signs and exponents.
+--                              Amended a bug where the wrong shift register
+--                              value was being checked in an if statement
+--                              resulting in potentially wrong signs.
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -51,17 +58,19 @@ end float_add;
 architecture rtl of float_add is
 
   --breaking up the inputs into the respective parts
-  signal a_sign  : std_logic;
-  signal b_sign  : std_logic;
-  signal a_exp   : unsigned( 7 downto 0);
-  signal b_exp   : unsigned( 7 downto 0);
-  signal a_frac  : unsigned(22 downto 0);
-  signal b_frac  : unsigned(22 downto 0);
+  signal a_sign   : std_logic;
+  signal b_sign   : std_logic;
+  signal a_exp    : unsigned( 7 downto 0);
+  signal b_exp    : unsigned( 7 downto 0);
+  signal a_frac   : unsigned(22 downto 0);
+  signal b_frac   : unsigned(22 downto 0);
 
   -- 1st clock cycle signals
-  signal exp_dif : unsigned(7 downto 0);
-  signal a_mand  : unsigned(23 downto 0); -- 1 uint and 23 frac
-  signal b_mand  : unsigned(23 downto 0); -- 1 uint and 23 frac
+  signal exp_dif   : unsigned(7 downto 0);
+  signal a_exp_sr  : unsigned( 7 downto 0);
+  signal b_exp_sr  : unsigned( 7 downto 0);
+  signal a_mand    : unsigned(23 downto 0); -- 1 uint and 23 frac
+  signal b_mand    : unsigned(23 downto 0); -- 1 uint and 23 frac
 
   -- 2nd clock cycle signals
   signal exp_both              : unsigned( 7 downto 0);
@@ -84,6 +93,8 @@ architecture rtl of float_add is
   signal is_mod_a_bigger : std_logic_vector(1 downto 0);
   signal nan_detected    : std_logic_vector(2 downto 0);
   signal inf_detected    : std_logic_vector(2 downto 0);
+  signal a_sign_sr       : std_logic_vector(1 downto 0);
+  signal b_sign_sr       : std_logic_vector(1 downto 0);
 
 begin
 
@@ -135,6 +146,12 @@ begin
       else
         b_mand <= unsigned('1' & std_logic_vector(b_frac)); -- normal
       end if;
+      -- shift reister the exponent here to ensure that the correct
+      -- exponent can be selected in the next clock cycle
+      a_exp_sr     <= a_exp;
+      b_exp_sr     <= b_exp;
+      a_sign_sr(0) <= a_sign;
+      b_sign_sr(0) <= b_sign;
     end if;
   end process zero_or_non_zero_select;
 
@@ -184,14 +201,16 @@ begin
   begin
     if rising_edge(clk_i) then
       is_mod_a_bigger(1) <= is_mod_a_bigger(0);
+      a_sign_sr(1)       <= a_sign_sr(0);
+      b_sign_sr(1)       <= b_sign_sr(0);
       if is_mod_a_bigger(0) = '1' then
         a_mand_bitshifted <= unsigned(std_logic_vector(a_mand) & '0');
         b_mand_bitshifted <= shift_right(unsigned(std_logic_vector(b_mand) & '0'),to_integer(exp_dif));
-        exp_both          <= a_exp;
+        exp_both          <= a_exp_sr;
       else
         a_mand_bitshifted <= shift_right(unsigned(std_logic_vector(a_mand) & '0'),to_integer(exp_dif));
         b_mand_bitshifted <= unsigned(std_logic_vector(b_mand) & '0');
-        exp_both          <= b_exp;
+        exp_both          <= b_exp_sr;
       end if;
     end if;
   end process bitshift_process;
@@ -202,38 +221,39 @@ begin
 
   -- next step is to perform the maths now that the numbers both have the
   -- same exponent
+  -- clock cycle 3
   math_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
       result_exp <= exp_both;
-      if (a_sign = '0') and (b_sign = '0') then
+      if (a_sign_sr(1) = '0') and (b_sign_sr(1) = '0') then
         -- both numbers are positive and we can just add
         result_mand_unshifted <= a_mand_bitshifted_se + b_mand_bitshifted_se;
         result_sign           <= '0'; -- pos
-      elsif (a_sign = '1') and (b_sign = '1') then
+      elsif (a_sign_sr(1) = '1') and (b_sign_sr(1) = '1') then
         -- both numbers are negative and we can just add the fractions
         -- (-a) + (-b) = - (a+b)
         result_mand_unshifted <= a_mand_bitshifted_se + b_mand_bitshifted_se;
         result_sign           <= '1'; -- neg
-      elsif (is_mod_a_bigger(1) = '1') and (a_sign = '1') and (b_sign = '0') then
+      elsif (is_mod_a_bigger(1) = '1') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
         -- a has a bigger modulus, and is negative,
         -- b is positive
         -- the result here will be a smaller negative number
         result_mand_unshifted <= a_mand_bitshifted_se - b_mand_bitshifted_se;
         result_sign           <= '1'; -- neg
-      elsif (is_mod_a_bigger(1) = '1') and (a_sign = '0') and (b_sign = '1') then
+      elsif (is_mod_a_bigger(1) = '1') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
         -- a has a bigger modulus, and is positive,
         -- b is negative
         -- the result here will be a smaller positive number
         result_mand_unshifted <= a_mand_bitshifted_se - b_mand_bitshifted_se;
         result_sign           <= '0'; -- pos
-      elsif (is_mod_a_bigger(0) = '0') and (a_sign = '1') and (b_sign = '0') then
+      elsif (is_mod_a_bigger(1) = '0') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
         -- a is negative
         -- b has a bigger modulus, and is positive,
         -- the result here will be a smaller positive number
         result_mand_unshifted <= b_mand_bitshifted_se - a_mand_bitshifted_se;
         result_sign           <= '0'; -- pos
-      else --if (is_mod_a_bigger(0) = '0') and (a_sign = '0') and (b_sign = '1') then
+      else --if (is_mod_a_bigger(1) = '0') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
         -- a is positive
         -- b has a bigger modulus, and is negative,
         -- the result here will be a smaller negative number
