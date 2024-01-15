@@ -13,6 +13,7 @@
 -- 1.1  A. Thornton   2024-Jan-14 Real numbers were going to high in tb, 
 --                                so added a limit to the expected answer to 
 --                                properly get to infinity
+-- 1.2  A. Thornton   2023-Jan-15 Neatening
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -123,7 +124,7 @@ begin
   output_calculator_proc : process(tb_clk)
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
     constant INF_MANT       : std_logic_vector(22 downto 0) := 23x"000000";
-    constant NAN_MANT       : std_logic_vector(22 downto 0) := 23x"000001"; --snan
+    constant NAN_MANT       : std_logic_vector(22 downto 0) := 23x"000001";
     constant LARGEST_NUM    : std_logic_vector(31 downto 0) := x"7f7fffff";
     constant SMALLEST_NUM   : std_logic_vector(31 downto 0) := x"ff7fffff";
   begin
@@ -205,7 +206,9 @@ begin
         -- clock cycle 5 check predicted to actual
         -- also allow it to be 1 out due to rounding errors
         if tb_chk_rdy_sr(4) = '1' then
-          assert (tb_expect = tb_c) or (std_logic_vector(signed(tb_expect)-1) = tb_c)or (std_logic_vector(signed(tb_expect)+1) = tb_c)
+          assert (tb_expect = tb_c) or 
+                 (std_logic_vector(signed(tb_expect)-1) = tb_c) or 
+                 (std_logic_vector(signed(tb_expect)+1) = tb_c)
           report "ERROR output was not what was expected"
           severity failure;
         end if;

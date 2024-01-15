@@ -43,6 +43,7 @@
 -- 1.10 A. Thornton  2024-01-14 Amended condition on bitshifting when moving
 --                              from normal numbers to a subnormal number
 -- 1.11 A. Thornton  2024-01-14 Code neatening and comment cleanup
+-- 1.12 A. Thornton  2023-01-15 Added synchronous reset strategy
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -74,7 +75,7 @@ architecture rtl of float_add is
   signal b_frac   : unsigned(22 downto 0);
 
   -- 1st clock cycle signals
-  signal exp_dif   : unsigned(7 downto 0);
+  signal exp_dif   : unsigned( 7 downto 0);
   signal a_exp_sr  : unsigned( 7 downto 0);
   signal b_exp_sr  : unsigned( 7 downto 0);
   signal a_mand    : unsigned(23 downto 0); -- 1 uint and 23 frac
@@ -167,6 +168,10 @@ begin
       else
         b_mand <= unsigned('1' & std_logic_vector(b_frac)); -- normal
       end if;
+      if srst_i = '1' then
+        a_mand <= to_unsigned(0,24);
+        b_mand <= to_unsigned(0,24);
+      end if;
     end if;
   end process zero_or_non_zero_select;
 
@@ -180,6 +185,12 @@ begin
       b_exp_sr     <= b_exp;
       a_sign_sr(0) <= a_sign;
       b_sign_sr(0) <= b_sign;
+      if srst_i = '1' then
+        a_exp_sr <= to_unsigned(0,8);
+        b_exp_sr <= to_unsigned(0,8);
+        a_sign_sr(0) <= '0';
+        b_sign_sr(0) <= '0';
+      end if;
     end if;
   end process shift_register_proc;
 
@@ -219,6 +230,10 @@ begin
       end if;
       nan_detected(2 downto 1) <= nan_detected(1 downto 0);
       inf_detected(2 downto 1) <= inf_detected(1 downto 0);
+      if srst_i = '1' then
+        nan_detected(2 downto 0) <= (others => '0');
+        inf_detected(2 downto 0) <= (others => '0');
+      end if;
     end if;
   end process nan_detection;
 
@@ -244,6 +259,14 @@ begin
         a_mand_bitshifted <= shift_right(a_mand_se,to_integer(exp_dif));
         b_mand_bitshifted <= unsigned(std_logic_vector(b_mand) & '0');
         exp_both          <= b_exp_sr;
+      end if;
+      if srst_i = '1' then
+        a_mand_bitshifted <= to_unsigned(0,25);
+        b_mand_bitshifted <= to_unsigned(0,25);
+        exp_both          <= to_unsigned(0,8);
+        mod_a_bgr(1)      <= '0';
+        a_sign_sr(1)      <= '0';
+        b_sign_sr(1)      <= '0';
       end if;
     end if;
   end process bitshift_process;
@@ -294,6 +317,11 @@ begin
         result_mand_unshifted <= b_mand_bitshifted_se - a_mand_bitshifted_se;
         result_sign           <= '1'; -- neg
       end if;
+      if srst_i = '1' then
+        result_exp            <= to_unsigned(0,8);
+        result_mand_unshifted <= to_unsigned(0,26);
+        result_sign           <= '0';
+      end if;
     end if;
   end process math_process;
 
@@ -308,7 +336,7 @@ begin
     constant ZERO_EXP        : unsigned( 7 downto 0) := to_unsigned(0, 8);
     constant ZERO_MANT       : unsigned(25 downto 0) := to_unsigned(0,26);
     constant MAX_EXP         : std_logic_vector( 7 downto 0) := x"FE";
-    constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := 26x"0x0FFFFFE";
+    constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := 26x"0FFFFFE";
   begin
     if rising_edge(clk_i) then
       result_sign_final <= result_sign;
@@ -363,6 +391,11 @@ begin
               result_mand_shifted <= shift_left(result_mand_unshifted,23-i);
           end if;
         end loop;
+      end if;
+      if srst_i = '1' then
+        result_sign_final   <= '0';
+        result_exp_shifted  <= to_unsigned(0,8);
+        result_mand_shifted <= to_unsigned(0,26);
       end if;
     end if;
   end process re_normalise_proc;
