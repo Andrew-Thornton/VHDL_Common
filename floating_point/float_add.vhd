@@ -42,6 +42,7 @@
 --                              being incorrect
 -- 1.10 A. Thornton  2024-01-14 Amended condition on bitshifting when moving
 --                              from normal numbers to a subnormal number
+-- 1.11 A. Thornton  2024-01-14 Code neatening and comment cleanup
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -97,7 +98,7 @@ architecture rtl of float_add is
   signal result_mand_shifted   : unsigned(25 downto 0);
 
   --multi cycle signals
-  signal is_mod_a_bigger : std_logic_vector(1 downto 0);
+  signal mod_a_bgr       : std_logic_vector(1 downto 0);
   signal nan_detected    : std_logic_vector(2 downto 0);
   signal inf_detected    : std_logic_vector(2 downto 0);
   signal a_sign_sr       : std_logic_vector(1 downto 0);
@@ -113,69 +114,78 @@ begin
   a_frac <= unsigned(a_i(22 downto  0));
   b_frac <= unsigned(b_i(22 downto  0));
 
-  -- first part of the process is to decide which modulus is bigger,
-  -- first clock cycle
+  -- first part of the process is to decide which modulus is bigger by a
+  -- comparrison. During this process the difference between the exponentials
+  -- is also calculated where this is the following
+  -- normal numbers               : exp(biggest mod) - exp(smallest mod)
+  -- smallest number is subnormal : exp(biggest mod) - exp(smallest mod) - 1
+  -- This process forms part of the first clock cycle
   max_exp_decide : process(clk_i)
     constant EXP_ZEROS : std_logic_vector(7 downto 0) := x"00";
   begin
     if rising_edge(clk_i) then
       if a_exp = b_exp then
         if a_frac > b_frac then
-          is_mod_a_bigger(0) <= '1';
+          mod_a_bgr(0) <= '1';
         else
-          is_mod_a_bigger(0) <= '0';
+          mod_a_bgr(0) <= '0';
         end if;
         exp_dif <= to_unsigned(0,8);
       elsif a_exp > b_exp then
-        is_mod_a_bigger(0) <= '1';
-        exp_dif        <= a_exp - b_exp;
-        -- if the smallest number is subnormal then there is a factor of 1 to
-        -- include as the exponent is 2^-126 instead of from 2^-127
+        mod_a_bgr(0) <= '1';
+        exp_dif      <= a_exp - b_exp; -- normal
         if std_logic_vector(b_exp) = EXP_ZEROS then
-          exp_dif        <= a_exp - b_exp - 1;
+          exp_dif    <= a_exp - b_exp - 1; -- subnormal
         end if;
       else -- a_exp < b_exp
-        is_mod_a_bigger(0) <= '0';
-        exp_dif        <= b_exp - a_exp;
-        -- if the smallest number is subnormal then there is a factor of 1 to
-        -- include as the exponent is 2^-126 instead of from 2^-127
+        mod_a_bgr(0) <= '0';
+        exp_dif      <= b_exp - a_exp; -- normal
         if std_logic_vector(a_exp) = EXP_ZEROS then
-          exp_dif        <= b_exp - a_exp - 1;
+          exp_dif    <= b_exp - a_exp - 1; -- subnormal
         end if;
       end if;
     end if;
   end process max_exp_decide;
 
-  -- When exponent is not zero, the integer part of "1" in
-  -- the 1.X is added.
-  -- When the exponent is zero then it is 0.x or 0.0 (zero or subnormal
-  -- first clock cycle
+  -- This process adds the missing integer part to a number if the number
+  -- is normal and not zero or subnormal.
+  -- IE the 1 in 1.X is added.
+  -- or the 0 in 0.X is added.
+  -- When the exponent is zero then the number is subnormal or 0.
+  -- This process forms part of the first clock cycle.
   zero_or_non_zero_select : process(clk_i)
     constant EXP_ZEROS : std_logic_vector(7 downto 0) := x"00";
   begin
     if rising_edge(clk_i) then
       if (std_logic_vector(a_exp) = EXP_ZEROS) then
-        a_mand <= unsigned('0' & std_logic_vector(a_frac)); -- subnormal or zero
+        a_mand <= unsigned('0' & std_logic_vector(a_frac)); -- subnorm or zero
       else
         a_mand <= unsigned('1' & std_logic_vector(a_frac)); -- normal
       end if;
       if (std_logic_vector(b_exp) = EXP_ZEROS) then
-        b_mand <= unsigned('0' & std_logic_vector(b_frac)); -- subnormal or zero
+        b_mand <= unsigned('0' & std_logic_vector(b_frac)); -- subnorm or zero
       else
         b_mand <= unsigned('1' & std_logic_vector(b_frac)); -- normal
       end if;
-      -- shift reister the exponent here to ensure that the correct
-      -- exponent can be selected in the next clock cycle
+    end if;
+  end process zero_or_non_zero_select;
+
+  -- This process performs shift registering to remember the input values
+  -- for future usage.
+  -- This process forms part of the first clock cycle.
+  shift_register_proc : process(clk_i)
+  begin
+    if rising_edge(clk_i) then
       a_exp_sr     <= a_exp;
       b_exp_sr     <= b_exp;
       a_sign_sr(0) <= a_sign;
       b_sign_sr(0) <= b_sign;
     end if;
-  end process zero_or_non_zero_select;
+  end process shift_register_proc;
 
-  -- this process checks for Nan and Inf
-  -- and places the detection into a shift register for later use
-  -- first clock cycle
+  -- This process checks for Nan and Inf and places the detection into a
+  -- shift register for later use.
+  -- This process forms part of the first clock cycle.
   nan_detection : process(clk_i)
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
     constant INF_MAND       : std_logic_vector(22 downto 0) := 23x"000000";
@@ -186,7 +196,6 @@ begin
       inf_detected(0) <= '0';
       if (std_logic_vector(a_exp) = INF_OR_NAN_EXP) then
         if (std_logic_vector(a_frac) = INF_MAND) then
-          --infinity detected
           inf_detected(0) <= '1';
         else
           nan_detected(0) <= '1';
@@ -213,33 +222,40 @@ begin
     end if;
   end process nan_detection;
 
-  -- next part is to bitshift the smaller number so that the exponents are same
-  -- second clock cycle
+  -- This process bitshift the smaller number so that the exponents are same
+  -- This process is in the second clock cycle.
   bitshift_process : process(clk_i)
+    variable a_mand_se : unsigned(24 downto 0);
+    variable b_mand_se : unsigned(24 downto 0);
   begin
     if rising_edge(clk_i) then
-      is_mod_a_bigger(1) <= is_mod_a_bigger(0);
-      a_sign_sr(1)       <= a_sign_sr(0);
-      b_sign_sr(1)       <= b_sign_sr(0);
-      if is_mod_a_bigger(0) = '1' then
-        a_mand_bitshifted <= unsigned(std_logic_vector(a_mand) & '0');
-        b_mand_bitshifted <= shift_right(unsigned(std_logic_vector(b_mand) & '0'),to_integer(exp_dif));
+      mod_a_bgr(1) <= mod_a_bgr(0);
+      a_sign_sr(1) <= a_sign_sr(0);
+      b_sign_sr(1) <= b_sign_sr(0);
+      if mod_a_bgr(0) = '1' then
+        a_mand_se         := unsigned(std_logic_vector(a_mand) & '0');
+        b_mand_se         := unsigned(std_logic_vector(b_mand) & '0');
+        a_mand_bitshifted <= a_mand_se;
+        b_mand_bitshifted <= shift_right(b_mand_se,to_integer(exp_dif));
         exp_both          <= a_exp_sr;
       else
-        a_mand_bitshifted <= shift_right(unsigned(std_logic_vector(a_mand) & '0'),to_integer(exp_dif));
+        a_mand_se         := unsigned(std_logic_vector(a_mand) & '0');
+        b_mand_se         := unsigned(std_logic_vector(b_mand) & '0');
+        a_mand_bitshifted <= shift_right(a_mand_se,to_integer(exp_dif));
         b_mand_bitshifted <= unsigned(std_logic_vector(b_mand) & '0');
         exp_both          <= b_exp_sr;
       end if;
     end if;
   end process bitshift_process;
 
-  -- sign extend so that it allows for bit growth in addition
+  -- Sign extend so that it allows for bit growth in addition
+  -- mandissa's are unsigned so just add '0' to the front
   a_mand_bitshifted_se <= unsigned('0' & std_logic_vector(a_mand_bitshifted));
   b_mand_bitshifted_se <= unsigned('0' & std_logic_vector(b_mand_bitshifted));
 
-  -- next step is to perform the maths now that the numbers both have the
-  -- same exponent
-  -- clock cycle 3
+  -- The next process is to perform the addition or subtractions on the
+  -- mandissas now that the numbers both have the same exponent.
+  -- This process is in the third clock cycle.
   math_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
@@ -253,25 +269,25 @@ begin
         -- (-a) + (-b) = - (a+b)
         result_mand_unshifted <= a_mand_bitshifted_se + b_mand_bitshifted_se;
         result_sign           <= '1'; -- neg
-      elsif (is_mod_a_bigger(1) = '1') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
+      elsif (mod_a_bgr(1) = '1') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
         -- a has a bigger modulus, and is negative,
         -- b is positive
         -- the result here will be a smaller negative number
         result_mand_unshifted <= a_mand_bitshifted_se - b_mand_bitshifted_se;
         result_sign           <= '1'; -- neg
-      elsif (is_mod_a_bigger(1) = '1') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
+      elsif (mod_a_bgr(1) = '1') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
         -- a has a bigger modulus, and is positive,
         -- b is negative
         -- the result here will be a smaller positive number
         result_mand_unshifted <= a_mand_bitshifted_se - b_mand_bitshifted_se;
         result_sign           <= '0'; -- pos
-      elsif (is_mod_a_bigger(1) = '0') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
+      elsif (mod_a_bgr(1) = '0') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
         -- a is negative
         -- b has a bigger modulus, and is positive,
         -- the result here will be a smaller positive number
         result_mand_unshifted <= b_mand_bitshifted_se - a_mand_bitshifted_se;
         result_sign           <= '0'; -- pos
-      else --if (is_mod_a_bigger(1) = '0') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
+      else --if (mod_a_bgr(1) = '0') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
         -- a is positive
         -- b has a bigger modulus, and is negative,
         -- the result here will be a smaller negative number
@@ -281,17 +297,18 @@ begin
     end if;
   end process math_process;
 
-  -- this process aims at ensuring the result is in scientific notation
+  -- This process ensures the result is in scientific notation by bitshifting
   -- ie 1.27*2^x
-  -- unless the number is extremely small and there is no further exponent range
+  -- unless the resultant number is special ie. nan, +/-inf zero, or subnormal
+  -- This process is the fourth and final clock cycle
   re_normalise_proc : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 7 downto 0) := x"FF";
-    constant NAN_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000002"; --snan
+    constant NAN_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000002";
     constant INF_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000000";
     constant ZERO_EXP        : unsigned( 7 downto 0) := to_unsigned(0, 8);
     constant ZERO_MANT       : unsigned(25 downto 0) := to_unsigned(0,26);
-    constant MAX_EXP         : std_logic_vector(7 downto 0) := x"FE";
-    constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := "00111111111111111111111110"; --2 int --24 frac
+    constant MAX_EXP         : std_logic_vector( 7 downto 0) := x"FE";
+    constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := 26x"0x0FFFFFE";
   begin
     if rising_edge(clk_i) then
       result_sign_final <= result_sign;
@@ -340,7 +357,7 @@ begin
             end if;
           end if;
           if result_exp = 24-i then
-              -- we have moved into a subnormal number and need to bitshit
+              -- we have moved into a subnormal number and need to bitshift
               -- one less
               result_exp_shifted  <= result_exp - (24-i);
               result_mand_shifted <= shift_left(result_mand_unshifted,23-i);
