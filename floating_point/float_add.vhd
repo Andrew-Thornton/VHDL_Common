@@ -40,6 +40,8 @@
 --                              factor of 1 out when adding one normal and one
 --                              subnormal number resulting in the bitshifting
 --                              being incorrect
+-- 1.10 A. Thornton  2024-01-14 Amended condition on bitshifting when moving
+--                              from normal numbers to a subnormal number
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -304,7 +306,7 @@ begin
         result_exp_shifted  <= ZERO_EXP;
         result_mand_shifted <= ZERO_MANT;
       elsif result_mand_unshifted(25) = '1' then
-        -- bitgrowth occurred and we need to shift the exponent or divide by 2
+        -- bitgrowth occurred and we need to shift the exponent
         -- unless infinity was reached
         result_exp_shifted  <= result_exp + 1;
         result_mand_shifted <= shift_right(result_mand_unshifted,1);
@@ -325,11 +327,23 @@ begin
       elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
         result_exp_shifted  <= result_exp;
         result_mand_shifted <= result_mand_unshifted;
-      else --normal number and bitshiting required
-        for i in 1 to 24 loop
+      else --result_mand_unshifted(24 = '0') normal num, bitshiting required
+        for i in 1 to 23 loop
+          -- this checks for biggest '1's in the correct range and then
+          -- bitshifts if appropriate
           if result_mand_unshifted(i) = '1' then
-            result_exp_shifted  <= result_exp - (24-i);
-            result_mand_shifted <= shift_left(result_mand_unshifted,24-i);
+            -- this condition ensures that you dont shift to a exponent of -1 or
+            -- a negative number
+            if result_exp > 24-i then --moved into a normal number still
+              result_exp_shifted  <= result_exp - (24-i);
+              result_mand_shifted <= shift_left(result_mand_unshifted,24-i);
+            end if;
+          end if;
+          if result_exp = 24-i then
+              -- we have moved into a subnormal number and need to bitshit
+              -- one less
+              result_exp_shifted  <= result_exp - (24-i);
+              result_mand_shifted <= shift_left(result_mand_unshifted,23-i);
           end if;
         end loop;
       end if;

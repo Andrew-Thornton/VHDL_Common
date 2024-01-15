@@ -10,6 +10,9 @@
 -------------------------------------------------------------------------------
 -- Rev  Author        Date        Description
 -- 1.0  A. Thornton   2024-Jan-14 Testbench Creation
+-- 1.1  A. Thornton   2024-Jan-14 Real numbers were going to high in tb, 
+--                                so added a limit to the expected answer to 
+--                                properly get to infinity
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -121,6 +124,8 @@ begin
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
     constant INF_MANT       : std_logic_vector(22 downto 0) := 23x"000000";
     constant NAN_MANT       : std_logic_vector(22 downto 0) := 23x"000001"; --snan
+    constant LARGEST_NUM    : std_logic_vector(31 downto 0) := x"7f7fffff";
+    constant SMALLEST_NUM   : std_logic_vector(31 downto 0) := x"ff7fffff";
   begin
     if rising_edge(tb_clk) then
       if tb_srst = '1' then
@@ -179,6 +184,14 @@ begin
 
         -- clock cycle 3 delay the result waiting for return
         tb_a_plus_b_sr  <= tb_a_plus_b;
+        if tb_a_plus_b > slv_to_real(LARGEST_NUM) then
+          tb_inf_detect(2) <= '1';
+          tb_inf_sign(2)   <= '0';
+        end if;
+        if tb_a_plus_b < slv_to_real(SMALLEST_NUM) then
+          tb_inf_detect(2) <= '1';
+          tb_inf_sign(2)   <= '1';
+        end if;
 
         -- clock cycle 4 convert expected output
         if tb_nan_detect(2) = '1' then

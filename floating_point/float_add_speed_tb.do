@@ -10,6 +10,7 @@
 ###############################################################################
 ## Rev  Author       Date        Description
 ## 1.0  A. Thornton  2024-Jan-14 Do file Creation
+## 1.1  A. Thornton  2024-Jan-14 Increased simulation time
 ###############################################################################
 
 vlib work
@@ -23,6 +24,6 @@ add wave sim:/float_add_speed_tb/*
 add wave -divider
 add wave sim:/float_add_speed_tb/dut/*
 
-run 10 ms
+run 100 ms
 
 wave zoom full
