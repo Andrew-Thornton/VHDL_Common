@@ -36,6 +36,10 @@
 --                              value was being checked in an if statement
 --                              resulting in potentially wrong signs.
 -- 1.8  A. Thornton  2024-01-14 Made NAN always positive
+-- 1.9  A. Thornton  2024-01-14 Fixed phenomena where the exp difference is a
+--                              factor of 1 out when adding one normal and one
+--                              subnormal number resulting in the bitshifting
+--                              being incorrect
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -110,6 +114,7 @@ begin
   -- first part of the process is to decide which modulus is bigger,
   -- first clock cycle
   max_exp_decide : process(clk_i)
+    constant EXP_ZEROS : std_logic_vector(7 downto 0) := x"00";
   begin
     if rising_edge(clk_i) then
       if a_exp = b_exp then
@@ -122,9 +127,19 @@ begin
       elsif a_exp > b_exp then
         is_mod_a_bigger(0) <= '1';
         exp_dif        <= a_exp - b_exp;
+        -- if the smallest number is subnormal then there is a factor of 1 to
+        -- include as the exponent is 2^-126 instead of from 2^-127
+        if std_logic_vector(b_exp) = EXP_ZEROS then
+          exp_dif        <= a_exp - b_exp - 1;
+        end if;
       else -- a_exp < b_exp
         is_mod_a_bigger(0) <= '0';
         exp_dif        <= b_exp - a_exp;
+        -- if the smallest number is subnormal then there is a factor of 1 to
+        -- include as the exponent is 2^-126 instead of from 2^-127
+        if std_logic_vector(a_exp) = EXP_ZEROS then
+          exp_dif        <= b_exp - a_exp - 1;
+        end if;
       end if;
     end if;
   end process max_exp_decide;
