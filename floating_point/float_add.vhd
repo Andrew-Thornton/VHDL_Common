@@ -35,6 +35,7 @@
 --                              Amended a bug where the wrong shift register
 --                              value was being checked in an if statement
 --                              resulting in potentially wrong signs.
+-- 1.8  A. Thornton  2024-01-14 Made NAN always positive
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -280,6 +281,7 @@ begin
       if nan_detected(2) = '1' then
         result_exp_shifted  <= unsigned(NAN_INF_EXP);
         result_mand_shifted <= unsigned(NAN_MANT);
+        result_sign_final   <= '0';
       elsif inf_detected(2) = '1' then
         result_exp_shifted  <= unsigned(NAN_INF_EXP);
         result_mand_shifted <= unsigned(INF_MANT);
