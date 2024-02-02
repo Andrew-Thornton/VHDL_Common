@@ -43,7 +43,9 @@
 -- 1.10 A. Thornton  2024-01-14 Amended condition on bitshifting when moving
 --                              from normal numbers to a subnormal number
 -- 1.11 A. Thornton  2024-01-14 Code neatening and comment cleanup
--- 1.12 A. Thornton  2023-01-15 Added synchronous reset strategy
+-- 1.12 A. Thornton  2024-01-15 Added synchronous reset strategy
+-- 1.13 A. Thornton  2024-02-02 split the 4th clock cyle to try an meet timing
+--                              @500 MHz on desired device
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -89,14 +91,17 @@ architecture rtl of float_add is
   signal b_mand_bitshifted_se  : unsigned(25 downto 0); -- 2 uint 24 frac
 
   --3rd clock cycle signals
-  signal result_sign           : std_logic;
   signal result_exp            : unsigned( 7 downto 0);
   signal result_mand_unshifted : unsigned(25 downto 0); -- 2 uint 24 frac
 
   --4th clock cycle signals
-  signal result_sign_final     : std_logic;
-  signal result_exp_shifted    : unsigned( 7 downto 0);
-  signal result_mand_shifted   : unsigned(25 downto 0);
+  signal result_exp_r_shifted  : unsigned( 7 downto 0);
+  signal result_mand_r_shifted : unsigned(25 downto 0);
+  signal left_shift_required   : std_logic;
+
+  --5th clock cycle signals
+  signal result_exp_l_shifted  : unsigned( 7 downto 0);
+  signal result_mand_l_shifted : unsigned(25 downto 0);
 
   --multi cycle signals
   signal mod_a_bgr       : std_logic_vector(1 downto 0);
@@ -104,6 +109,7 @@ architecture rtl of float_add is
   signal inf_detected    : std_logic_vector(2 downto 0);
   signal a_sign_sr       : std_logic_vector(1 downto 0);
   signal b_sign_sr       : std_logic_vector(1 downto 0);
+  signal result_sign     : std_logic_vector(4 downto 2); --consis w clock cycles
 
 begin
 
@@ -286,41 +292,41 @@ begin
       if (a_sign_sr(1) = '0') and (b_sign_sr(1) = '0') then
         -- both numbers are positive and we can just add
         result_mand_unshifted <= a_mand_bitshifted_se + b_mand_bitshifted_se;
-        result_sign           <= '0'; -- pos
+        result_sign(2)        <= '0'; -- pos
       elsif (a_sign_sr(1) = '1') and (b_sign_sr(1) = '1') then
         -- both numbers are negative and we can just add the fractions
         -- (-a) + (-b) = - (a+b)
         result_mand_unshifted <= a_mand_bitshifted_se + b_mand_bitshifted_se;
-        result_sign           <= '1'; -- neg
+        result_sign(2)        <= '1'; -- neg
       elsif (mod_a_bgr(1) = '1') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
         -- a has a bigger modulus, and is negative,
         -- b is positive
         -- the result here will be a smaller negative number
         result_mand_unshifted <= a_mand_bitshifted_se - b_mand_bitshifted_se;
-        result_sign           <= '1'; -- neg
+        result_sign(2)        <= '1'; -- neg
       elsif (mod_a_bgr(1) = '1') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
         -- a has a bigger modulus, and is positive,
         -- b is negative
         -- the result here will be a smaller positive number
         result_mand_unshifted <= a_mand_bitshifted_se - b_mand_bitshifted_se;
-        result_sign           <= '0'; -- pos
+        result_sign(2)        <= '0'; -- pos
       elsif (mod_a_bgr(1) = '0') and (a_sign_sr(1) = '1') and (b_sign_sr(1) = '0') then
         -- a is negative
         -- b has a bigger modulus, and is positive,
         -- the result here will be a smaller positive number
         result_mand_unshifted <= b_mand_bitshifted_se - a_mand_bitshifted_se;
-        result_sign           <= '0'; -- pos
+        result_sign(2)        <= '0'; -- pos
       else --if (mod_a_bgr(1) = '0') and (a_sign_sr(1) = '0') and (b_sign_sr(1) = '1') then
         -- a is positive
         -- b has a bigger modulus, and is negative,
         -- the result here will be a smaller negative number
         result_mand_unshifted <= b_mand_bitshifted_se - a_mand_bitshifted_se;
-        result_sign           <= '1'; -- neg
+        result_sign(2)        <= '1'; -- neg
       end if;
       if srst_i = '1' then
         result_exp            <= to_unsigned(0,8);
         result_mand_unshifted <= to_unsigned(0,26);
-        result_sign           <= '0';
+        result_sign(2)        <= '0';
       end if;
     end if;
   end process math_process;
@@ -329,7 +335,7 @@ begin
   -- ie 1.27*2^x
   -- unless the resultant number is special ie. nan, +/-inf zero, or subnormal
   -- This process is the fourth and final clock cycle
-  re_normalise_proc : process(clk_i)
+  right_shift_proc : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 7 downto 0) := x"FF";
     constant NAN_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000002";
     constant INF_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000000";
@@ -339,70 +345,91 @@ begin
     constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := 26x"0FFFFFE";
   begin
     if rising_edge(clk_i) then
-      result_sign_final <= result_sign;
+      result_sign(3)      <= result_sign(2);
+      left_shift_required <= '0';
       if nan_detected(2) = '1' then
-        result_exp_shifted  <= unsigned(NAN_INF_EXP);
-        result_mand_shifted <= unsigned(NAN_MANT);
-        result_sign_final   <= '0';
+        result_exp_r_shifted  <= unsigned(NAN_INF_EXP);
+        result_mand_r_shifted <= unsigned(NAN_MANT);
+        result_sign(3)        <= '0';
       elsif inf_detected(2) = '1' then
-        result_exp_shifted  <= unsigned(NAN_INF_EXP);
-        result_mand_shifted <= unsigned(INF_MANT);
+        result_exp_r_shifted  <= unsigned(NAN_INF_EXP);
+        result_mand_r_shifted <= unsigned(INF_MANT);
       elsif result_mand_unshifted(25 downto 0) = ZERO_MANT then
-        result_exp_shifted  <= ZERO_EXP;
-        result_mand_shifted <= ZERO_MANT;
+        result_exp_r_shifted  <= ZERO_EXP;
+        result_mand_r_shifted <= ZERO_MANT;
       elsif result_mand_unshifted(25) = '1' then
         -- bitgrowth occurred and we need to shift the exponent
         -- unless infinity was reached
-        result_exp_shifted  <= result_exp + 1;
-        result_mand_shifted <= shift_right(result_mand_unshifted,1);
+        result_exp_r_shifted  <= result_exp + 1;
+        result_mand_r_shifted <= shift_right(result_mand_unshifted,1);
         if MAX_EXP = std_logic_vector(result_exp) then
-          result_exp_shifted  <= unsigned(NAN_INF_EXP);
-          result_mand_shifted <= unsigned(INF_MANT);
+          result_exp_r_shifted  <= unsigned(NAN_INF_EXP);
+          result_mand_r_shifted <= unsigned(INF_MANT);
         end if;
       elsif result_exp = ZERO_EXP then
         -- is a subnormal number of 0
         -- normally dont bit shift
-        result_exp_shifted  <= ZERO_EXP;
-        result_mand_shifted <= result_mand_unshifted;
+        result_exp_r_shifted  <= ZERO_EXP;
+        result_mand_r_shifted <= result_mand_unshifted;
         -- if has breaked out into normal numbers adjust accordingly
         if result_mand_unshifted(24) = '1' then
-          result_exp_shifted  <= to_unsigned(1,8);
-          result_mand_shifted <= result_mand_unshifted;
+          result_exp_r_shifted  <= to_unsigned(1,8);
+          result_mand_r_shifted <= result_mand_unshifted;
         end if;
       elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
-        result_exp_shifted  <= result_exp;
-        result_mand_shifted <= result_mand_unshifted;
+        result_exp_r_shifted  <= result_exp;
+        result_mand_r_shifted <= result_mand_unshifted;
       else --result_mand_unshifted(24 = '0') normal num, bitshiting required
+        left_shift_required   <= '1';
+        result_exp_r_shifted  <= result_exp;
+        result_mand_r_shifted <= result_mand_unshifted;
+      end if;
+      if srst_i = '1' then
+        left_shift_required   <= '0';
+        result_sign(3)        <= '0';
+        result_exp_r_shifted  <= to_unsigned(0,8);
+        result_mand_r_shifted <= to_unsigned(0,26);
+      end if;
+    end if;
+  end process right_shift_proc;
+
+  left_shift_process : process(clk_i)
+  begin
+    if rising_edge(clk_i) then
+      result_sign(4) <= result_sign(3);
+      if left_shift_required = '0' then
+        result_exp_l_shifted   <= result_exp_r_shifted;
+        result_mand_l_shifted  <= result_mand_r_shifted;
+      else -- left_shift_required = '1' then
         for i in 1 to 23 loop
           -- this checks for biggest '1's in the correct range and then
           -- bitshifts if appropriate
-          if result_mand_unshifted(i) = '1' then
+          if result_mand_r_shifted(i) = '1' then
             -- this condition ensures that you dont shift to a exponent of -1 or
             -- a negative number
-            if result_exp > 24-i then --moved into a normal number still
-              result_exp_shifted  <= result_exp - (24-i);
-              result_mand_shifted <= shift_left(result_mand_unshifted,24-i);
+            if result_exp_r_shifted > 24-i then --moved into a normal number still
+              result_exp_l_shifted  <= result_exp_r_shifted - (24-i);
+              result_mand_l_shifted <= shift_left(result_mand_r_shifted,24-i);
             end if;
           end if;
-          if result_exp = 24-i then
+          if result_exp_r_shifted = 24-i then
               -- we have moved into a subnormal number and need to bitshift
               -- one less
-              result_exp_shifted  <= result_exp - (24-i);
-              result_mand_shifted <= shift_left(result_mand_unshifted,23-i);
+              result_exp_l_shifted  <= result_exp_r_shifted - (24-i);
+              result_mand_l_shifted <= shift_left(result_mand_r_shifted,23-i);
           end if;
         end loop;
       end if;
       if srst_i = '1' then
-        result_sign_final   <= '0';
-        result_exp_shifted  <= to_unsigned(0,8);
-        result_mand_shifted <= to_unsigned(0,26);
+        result_sign(4)        <= '0';
+        result_exp_l_shifted  <= to_unsigned(0,8);
+        result_mand_l_shifted <= to_unsigned(0,26);
       end if;
     end if;
-  end process re_normalise_proc;
-
+  end process left_shift_process;
   -- output mapping
-  c_o(31)           <= result_sign_final;
-  c_o(30 downto 23) <= std_logic_vector(result_exp_shifted);
-  c_o(22 downto  0) <= std_logic_vector(result_mand_shifted(23 downto 1));
+  c_o(31)           <= result_sign(4);
+  c_o(30 downto 23) <= std_logic_vector(result_exp_l_shifted);
+  c_o(22 downto  0) <= std_logic_vector(result_mand_l_shifted(23 downto 1));
 
 end rtl;
