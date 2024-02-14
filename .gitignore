@@ -1,6 +1,7 @@
 **/modelsim.ini
 **/vlog.opt
 *.png
+*.bak
 
 logic/vsim.wlf
 logic/work/*

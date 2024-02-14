@@ -43,7 +43,8 @@
 -- 1.10 A. Thornton  2024-01-14 Amended condition on bitshifting when moving
 --                              from normal numbers to a subnormal number
 -- 1.11 A. Thornton  2024-01-14 Code neatening and comment cleanup
--- 1.12 A. Thornton  2023-01-15 Added synchronous reset strategy
+-- 1.12 A. Thornton  2024-01-15 Added synchronous reset strategy
+-- 1.13 A. Thornton  2024-02-13 Changed bitshift left process for timing
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -94,9 +95,16 @@ architecture rtl of float_add is
   signal result_mand_unshifted : unsigned(25 downto 0); -- 2 uint 24 frac
 
   --4th clock cycle signals
-  signal result_sign_final     : std_logic;
-  signal result_exp_shifted    : unsigned( 7 downto 0);
-  signal result_mand_shifted   : unsigned(25 downto 0);
+  signal result_sign_four      : std_logic;
+  signal exp_shifted_right     : unsigned( 7 downto 0);
+  signal mand_shifted_right    : unsigned(25 downto 0);
+  signal shift_left_req        : std_logic;
+  signal shift_left_amount     : natural range 0 to 25;
+
+  --5th clock cycle signals
+  signal result_sign_five      : std_logic;
+  signal exp_shifted_left      : unsigned( 7 downto 0);
+  signal mand_shifted_left     : unsigned(25 downto 0);
 
   --multi cycle signals
   signal mod_a_bgr       : std_logic_vector(1 downto 0);
@@ -339,70 +347,106 @@ begin
     constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := 26x"0FFFFFE";
   begin
     if rising_edge(clk_i) then
-      result_sign_final <= result_sign;
+      result_sign_four  <= result_sign;
+      shift_left_req    <= '0';
       if nan_detected(2) = '1' then
-        result_exp_shifted  <= unsigned(NAN_INF_EXP);
-        result_mand_shifted <= unsigned(NAN_MANT);
-        result_sign_final   <= '0';
+        exp_shifted_right  <= unsigned(NAN_INF_EXP);
+        mand_shifted_right <= unsigned(NAN_MANT);
+        result_sign_four    <= '0';
       elsif inf_detected(2) = '1' then
-        result_exp_shifted  <= unsigned(NAN_INF_EXP);
-        result_mand_shifted <= unsigned(INF_MANT);
+        exp_shifted_right  <= unsigned(NAN_INF_EXP);
+        mand_shifted_right <= unsigned(INF_MANT);
       elsif result_mand_unshifted(25 downto 0) = ZERO_MANT then
-        result_exp_shifted  <= ZERO_EXP;
-        result_mand_shifted <= ZERO_MANT;
+        exp_shifted_right  <= ZERO_EXP;
+        mand_shifted_right <= ZERO_MANT;
       elsif result_mand_unshifted(25) = '1' then
         -- bitgrowth occurred and we need to shift the exponent
         -- unless infinity was reached
-        result_exp_shifted  <= result_exp + 1;
-        result_mand_shifted <= shift_right(result_mand_unshifted,1);
+        exp_shifted_right  <= result_exp + 1;
+        mand_shifted_right <= shift_right(result_mand_unshifted,1);
         if MAX_EXP = std_logic_vector(result_exp) then
-          result_exp_shifted  <= unsigned(NAN_INF_EXP);
-          result_mand_shifted <= unsigned(INF_MANT);
+          exp_shifted_right  <= unsigned(NAN_INF_EXP);
+          mand_shifted_right <= unsigned(INF_MANT);
         end if;
       elsif result_exp = ZERO_EXP then
         -- is a subnormal number of 0
         -- normally dont bit shift
-        result_exp_shifted  <= ZERO_EXP;
-        result_mand_shifted <= result_mand_unshifted;
+        exp_shifted_right  <= ZERO_EXP;
+        mand_shifted_right <= result_mand_unshifted;
         -- if has breaked out into normal numbers adjust accordingly
         if result_mand_unshifted(24) = '1' then
-          result_exp_shifted  <= to_unsigned(1,8);
-          result_mand_shifted <= result_mand_unshifted;
+          exp_shifted_right  <= to_unsigned(1,8);
+          mand_shifted_right <= result_mand_unshifted;
         end if;
       elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
-        result_exp_shifted  <= result_exp;
-        result_mand_shifted <= result_mand_unshifted;
+        exp_shifted_right  <= result_exp;
+        mand_shifted_right <= result_mand_unshifted;
       else --result_mand_unshifted(24 = '0') normal num, bitshiting required
-        for i in 1 to 23 loop
-          -- this checks for biggest '1's in the correct range and then
-          -- bitshifts if appropriate
-          if result_mand_unshifted(i) = '1' then
-            -- this condition ensures that you dont shift to a exponent of -1 or
-            -- a negative number
-            if result_exp > 24-i then --moved into a normal number still
-              result_exp_shifted  <= result_exp - (24-i);
-              result_mand_shifted <= shift_left(result_mand_unshifted,24-i);
-            end if;
-          end if;
-          if result_exp = 24-i then
-              -- we have moved into a subnormal number and need to bitshift
-              -- one less
-              result_exp_shifted  <= result_exp - (24-i);
-              result_mand_shifted <= shift_left(result_mand_unshifted,23-i);
-          end if;
-        end loop;
+        shift_left_req     <= '1';
+        exp_shifted_right  <= result_exp;
+        mand_shifted_right <= result_mand_unshifted;
       end if;
       if srst_i = '1' then
-        result_sign_final   <= '0';
-        result_exp_shifted  <= to_unsigned(0,8);
-        result_mand_shifted <= to_unsigned(0,26);
+        shift_left_req     <= '0';
+        result_sign_four   <= '0';
+        exp_shifted_right  <= to_unsigned(0,8);
+        mand_shifted_right <= to_unsigned(0,26);
       end if;
     end if;
   end process re_normalise_proc;
 
+  -- This process looks at the mandissa, and then determines the position of
+  -- the leftmost bit, this is then used in the shift right process
+  -- This is in the fourth clock cycle
+  -- no reset required for this signal as shift_left_req  is reset to '0'
+  find_left_most_bit_process : process(clk_i)
+  begin
+    if rising_edge(clk_i) then
+      shift_left_amount  <= 24;
+      for i in 1 to 23 loop
+        if result_mand_unshifted(i) = '1' then
+          shift_left_amount  <= 24-i;
+        end if;
+      end loop;
+    end if;
+  end process find_left_most_bit_process;
+
+  -- fifth clock cycle bitshifting the result to the right
+  bitshift_left_process : process(clk_i)
+  begin
+    if rising_edge(clk_i) then
+      result_sign_five <= result_sign_four;
+      if shift_left_req  = '1' then
+        if (to_integer(exp_shifted_right) > shift_left_amount ) then
+          -- moved into a normal number still
+          exp_shifted_left  <= exp_shifted_right - shift_left_amount ;
+          mand_shifted_left <= shift_left(mand_shifted_right, shift_left_amount );
+        elsif (to_integer(exp_shifted_right) = shift_left_amount ) then
+          -- we have moved into a subnormal number and need to bitshift
+          -- one less
+          exp_shifted_left  <= to_unsigned(0,8);
+          mand_shifted_left <= shift_left(mand_shifted_right, shift_left_amount -1);
+        else
+          -- maximum bit shift we can do, but has entered subnormal range
+          -- one less as has entered subnormla
+          exp_shifted_left  <= to_unsigned(0,8);
+          mand_shifted_left <= shift_left(mand_shifted_right, to_integer(exp_shifted_right)-1);
+        end if;
+      else -- shift_left_req  = '0' then
+        exp_shifted_left  <= exp_shifted_right;
+        mand_shifted_left <= mand_shifted_right;
+      end if;
+      if srst_i = '1' then
+        result_sign_five  <= '0';
+        exp_shifted_left  <= to_unsigned(0,8);
+        mand_shifted_left <= to_unsigned(0,26);
+      end if;
+    end if;
+  end process bitshift_left_process;
+
   -- output mapping
-  c_o(31)           <= result_sign_final;
-  c_o(30 downto 23) <= std_logic_vector(result_exp_shifted);
-  c_o(22 downto  0) <= std_logic_vector(result_mand_shifted(23 downto 1));
+  c_o(31)           <= result_sign_five ;
+  c_o(30 downto 23) <= std_logic_vector(exp_shifted_left);
+  c_o(22 downto  0) <= std_logic_vector(mand_shifted_left(23 downto 1));
 
 end rtl;

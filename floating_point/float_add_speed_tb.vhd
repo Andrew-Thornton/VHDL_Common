@@ -10,10 +10,12 @@
 -------------------------------------------------------------------------------
 -- Rev  Author        Date        Description
 -- 1.0  A. Thornton   2024-Jan-14 Testbench Creation
--- 1.1  A. Thornton   2024-Jan-14 Real numbers were going to high in tb, 
---                                so added a limit to the expected answer to 
+-- 1.1  A. Thornton   2024-Jan-14 Real numbers were going to high in tb,
+--                                so added a limit to the expected answer to
 --                                properly get to infinity
--- 1.2  A. Thornton   2023-Jan-15 Neatening
+-- 1.2  A. Thornton   2024-Jan-15 Neatening
+-- 1.3  A. Thornton   2024-Feb-02 Added another clock cycle to meet changed dut
+-- 1.4  A. Thornton   2024-Feb-13 Added reset to a signal
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -60,6 +62,7 @@ architecture test_bench of float_add_speed_tb is
   signal tb_a_plus_b       : real;
   signal tb_a_plus_b_sr    : real;
   signal tb_expect         : std_logic_vector(31 downto 0);
+  signal tb_expect_ff      : std_logic_vector(31 downto 0);
   signal tb_chk_rdy_sr     : std_logic_vector(4 downto 0);
   signal tb_nan_detect     : std_logic_vector(2 downto 0);
   signal tb_inf_detect     : std_logic_vector(2 downto 0);
@@ -135,6 +138,7 @@ begin
         tb_a_plus_b     <= 0.0;
         tb_a_plus_b_sr  <= 0.0;
         tb_expect       <= (others => '0');
+        tb_expect_ff    <= (others => '0');
         tb_chk_rdy_sr   <= (others => '0');
         tb_nan_detect   <= (others => '0');
         tb_inf_detect   <= (others => '0');
@@ -203,12 +207,15 @@ begin
           tb_expect       <= real_to_slv(tb_a_plus_b_sr);
         end if;
 
-        -- clock cycle 5 check predicted to actual
+        -- clock cycle 5 delay the expected output again to match dut
+        tb_expect_ff <= tb_expect;
+
+        -- clock cycle 6 check predicted to actual
         -- also allow it to be 1 out due to rounding errors
         if tb_chk_rdy_sr(4) = '1' then
-          assert (tb_expect = tb_c) or 
-                 (std_logic_vector(signed(tb_expect)-1) = tb_c) or 
-                 (std_logic_vector(signed(tb_expect)+1) = tb_c)
+          assert (tb_expect_ff = tb_c) or
+                 (std_logic_vector(signed(tb_expect_ff)-1) = tb_c) or
+                 (std_logic_vector(signed(tb_expect_ff)+1) = tb_c)
           report "ERROR output was not what was expected"
           severity failure;
         end if;
