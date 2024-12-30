@@ -21,6 +21,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library std;
+use std.env.all;
+
 entity or_gate_tb is
 end or_gate_tb;
 
@@ -124,8 +127,7 @@ begin
     severity failure;
   
     wait until rising_edge(tb_clk);
-    report "Testing successful not an error"
-    severity failure;
+    std.env.finish;
     
     wait;
   

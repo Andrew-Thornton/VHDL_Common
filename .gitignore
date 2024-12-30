@@ -1,11 +1,24 @@
+#ignore the following file types
 **/modelsim.ini
 **/vlog.opt
 *.png
 *.bak
+*.o
+*.ghw
+*.cf
 
+#ignore some generated files
 logic/vsim.wlf
 logic/work/*
 
 floating_point/vsim.wlf
 floating_point/work/*
 floating_point/wlft*
+
+#ignore ghdl executables
+logic/and_gate_tb
+logic/nand_gate_tb
+logic/nor_gate_tb
+logic/or_gate_tb
+logic/xor_gate_tb
+
