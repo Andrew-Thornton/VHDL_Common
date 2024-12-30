@@ -1,13 +1,6 @@
 import cocotb
+from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, Timer
-
-async def generate_clock(dut):
-    """Generate clock pulses."""
-    while(True):
-        dut.clk_i.value = 0
-        await Timer(1, units="ns")
-        dut.clk_i.value = 1
-        await Timer(1, units="ns")
 
 async def generate_reset(dut):
     """Generate clock pulses."""
@@ -18,8 +11,11 @@ async def generate_reset(dut):
 
 @cocotb.test()
 async def and_gate_all_values_test(dut):
-    """Try accessing the design."""
-    cocotb.fork(generate_clock(dut))
+    #starting clock
+    clock = Clock(dut.clk_i, 10, units="ns")
+    cocotb.start_soon(clock.start())
+
+    #starting reset
     cocotb.fork(generate_reset(dut))
 
     await FallingEdge(dut.srst_i)
