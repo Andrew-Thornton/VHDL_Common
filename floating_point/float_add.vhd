@@ -347,7 +347,7 @@ begin
       if nan_detected(2) = '1' then
         exp_shifted_right  <= unsigned(NAN_INF_EXP);
         mand_shifted_right <= unsigned(NAN_MANT);
-        result_sign_four    <= '0';
+        result_sign_four   <= '0';
       elsif inf_detected(2) = '1' then
         exp_shifted_right  <= unsigned(NAN_INF_EXP);
         mand_shifted_right <= unsigned(INF_MANT);
