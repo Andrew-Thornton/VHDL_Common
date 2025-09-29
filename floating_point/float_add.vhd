@@ -376,7 +376,7 @@ begin
       elsif result_mand_unshifted(24) = '1' then --result is 1<=X<2
         exp_shifted_right  <= result_exp;
         mand_shifted_right <= result_mand_unshifted;
-      else --result_mand_unshifted(24 = '0') normal num, bitshiting required
+      else --result_mand_unshifted(24) = '0' normal num, bitshiting required
         shift_left_req     <= '1';
         exp_shifted_right  <= result_exp;
         mand_shifted_right <= result_mand_unshifted;
