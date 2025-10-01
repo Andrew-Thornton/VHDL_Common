@@ -71,11 +71,15 @@ architecture rtl of float_add is
 
   --4th clock cycle bitshifted signals
   signal res_mand_bs : std_logic_vector(23 downto 0);
-  signal res_exp_bs  : unsigned( 8 downto 0);
   signal exp_shifted_right : unsigned(46 downto 0);
   signal mand_shifted_right : unsigned(46 downto 0);
 
   signal res_sign_zzz : std_logic;
+
+  --5th clock cycle items
+  signal res_sign_zzzz : std_logic;
+  signal exp_shifted_left : unsigned(7 downto 0);
+  signal mand_shifted_left : unsigned(46 downto 0); --2 int 46 frac
 
 begin
 
@@ -321,7 +325,7 @@ begin
   bitshift_left_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
-      result_sign_five <= result_sign_four;
+      res_sign_zzzz <= res_sign_zzz;
       if shift_left_req  = '1' then
         if (to_integer(exp_shifted_right) > shift_left_amount ) then
           -- moved into a normal number still
@@ -331,7 +335,7 @@ begin
           -- we have moved into a subnormal number and need to bitshift
           -- one less
           exp_shifted_left  <= to_unsigned(0,8);
-          mand_shifted_left <= shift_left(mand_shifted_right, shift_left_amount -1);
+          mand_shifted_left <= shift_left(mand_shifted_right, shift_left_amount - 1);
         else
           -- maximum bit shift we can do, but has entered subnormal range
           -- one less as has entered subnormla
@@ -343,7 +347,7 @@ begin
         mand_shifted_left <= mand_shifted_right;
       end if;
       if srst_i = '1' then
-        result_sign_five  <= '0';
+        res_sign_zzzz     <= '0';
         exp_shifted_left  <= to_unsigned(0,8);
         mand_shifted_left <= to_unsigned(0,26);
       end if;
@@ -351,8 +355,8 @@ begin
   end process bitshift_left_process;
 
   -- output mapping
-  c_o(31)           <= res_sign_zzz;
-  c_o(30 downto 23) <= std_logic_vector(res_exp_bs(8 downto 0));
-  c_o(22 downto  0) <= std_logic_vector(res_mand_bs(23 downto 1));
+  c_o(31)           <= res_sign_zzzz;
+  c_o(30 downto 23) <= std_logic_vector(exp_shifted_left(8 downto 0));
+  c_o(22 downto  0) <= std_logic_vector(mand_shifted_left(44 downto 22));
 
 end rtl;
