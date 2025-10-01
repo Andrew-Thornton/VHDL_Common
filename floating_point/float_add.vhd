@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- Author        : Andrew Thornton
 -- Creation Date : 2023-Dec-09
--- Standard      : VDHL 2008
+-- Standard      : VHDL 2008
 -------------------------------------------------------------------------------
 -- Rev  Author       Date       Description
 -- 1.0  A. Thornton  2023-12-09 Module Creation
