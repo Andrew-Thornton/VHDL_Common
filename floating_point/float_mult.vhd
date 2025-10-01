@@ -69,16 +69,16 @@ architecture rtl of float_add is
 
   --4th clock cycle bitshifted signals
   signal res_mand_bs        : std_logic_vector(23 downto 0);
-  signal exp_shifted_right  : unsigned(46 downto 0);
-  signal mand_shifted_right : unsigned(46 downto 0);
+  signal exp_shifted_right  : unsigned( 9 downto 0);
+  signal mand_shifted_right : unsigned(47 downto 0); --2 int 46 frac
   signal shift_left_req     : std_logic;
   signal res_sign_zzz       : std_logic;
   signal shift_left_amount  : unsigned(5 downto 0);
 
   --5th clock cycle items
   signal res_sign_zzzz     : std_logic;
-  signal exp_shifted_left  : unsigned(7 downto 0);
-  signal mand_shifted_left : unsigned(46 downto 0); --2 int 46 frac
+  signal exp_shifted_left  : unsigned( 9 downto 0);
+  signal mand_shifted_left : unsigned(47 downto 0); --2 int 46 frac
 
 begin
 
@@ -209,8 +209,8 @@ begin
   exponent_res_pre_shift_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
-      res_exp_nbs      <= a_exp_sr + b_exp_sr;
-      res_exp_norm_nbs <= res_exp_nbs + 127;
+      res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr);
+      res_exp_norm_nbs <= ('0' & res_exp_nbs) + 127;
       if srst_i = '1' then
         res_exp_nbs      <= to_unsigned(0,9);
         res_exp_norm_nbs <= to_unsigned(0,10);
@@ -245,13 +245,12 @@ begin
   -- mandissa overflow or underflow
   -- note more to this here, andrew check soon, but need to make sure that we account for subnormal numbers
   renorm_process : process(clk_i)
-    constant NAN_INF_EXP     : std_logic_vector( 7 downto 0) := x"FF";
-    constant NAN_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000002";
-    constant INF_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000000";
-    constant ZERO_EXP        : unsigned( 7 downto 0) := to_unsigned(0, 8);
+    constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
+    constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000400000";
+    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
+    constant ZERO_EXP        : unsigned( 9 downto 0) := to_unsigned(0, 10);
     constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
-    constant MAX_EXP         : std_logic_vector( 7 downto 0) := x"FE";
-    constant S_NORM_MAX_MANT : std_logic_vector(47 downto 0) := 26x"0FFFFFE";
+    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
 
     constant MAND_2_0 : std_logic_vector(23 downto 0) := "100000000000000000000000"; --2 int 46 frac
     constant MAND_1_0 : std_logic_vector(23 downto 0) := "010000000000000000000000"; --2 int 46 frac
@@ -271,7 +270,7 @@ begin
         -- unless infinity was reached
         exp_shifted_right  <= res_exp_norm_nbs + 1;
         mand_shifted_right <= shift_right(res_mand,1);
-        if MAX_EXP = std_logic_vector(res_exp_norm_nbs) then
+        if MAX_EXP >= std_logic_vector(res_exp_norm_nbs) then
           exp_shifted_right  <= unsigned(NAN_INF_EXP);
           mand_shifted_right <= unsigned(INF_MANT);
         end if;
@@ -282,7 +281,7 @@ begin
         mand_shifted_right <= res_mand;
         -- if has breaked out into normal numbers adjust accordingly
         if res_mand(46) = '1' then
-          exp_shifted_right  <= to_unsigned(1,8);
+          exp_shifted_right  <= to_unsigned(1,10);
           mand_shifted_right <= res_mand;
         end if;
       elsif res_mand(46) = '1' then --result is 1<=X<2
@@ -296,8 +295,8 @@ begin
       if srst_i = '1' then
         shift_left_req     <= '0';
         res_sign_zzz       <= '0';
-        exp_shifted_right  <= to_unsigned(0,8);
-        mand_shifted_right <= to_unsigned(0,26);
+        exp_shifted_right  <= to_unsigned(0,10);
+        mand_shifted_right <= to_unsigned(0,48);
       end if;
     end if;
   end process renorm_process;
@@ -309,10 +308,10 @@ begin
   find_left_most_bit_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
-      shift_left_amount  <= 0;
+      shift_left_amount  <= to_unsigned(0,6);
       for i in 1 to 46 loop
         if res_mand(i) = '1' then
-          shift_left_amount  <= 47-i;
+          shift_left_amount  <= to_unsigned(47,6) - to_unsigned(i,6);
         end if;
       end loop;
     end if;
@@ -327,16 +326,16 @@ begin
         if (to_integer(exp_shifted_right) > shift_left_amount ) then
           -- moved into a normal number still
           exp_shifted_left  <= exp_shifted_right - shift_left_amount ;
-          mand_shifted_left <= shift_left(mand_shifted_right, shift_left_amount );
+          mand_shifted_left <= shift_left(mand_shifted_right, to_integer(shift_left_amount));
         elsif (to_integer(exp_shifted_right) = shift_left_amount ) then
           -- we have moved into a subnormal number and need to bitshift
           -- one less
-          exp_shifted_left  <= to_unsigned(0,8);
-          mand_shifted_left <= shift_left(mand_shifted_right, shift_left_amount - 1);
+          exp_shifted_left  <= to_unsigned(0,10);
+          mand_shifted_left <= shift_left(mand_shifted_right, to_integer(shift_left_amount) - 1);
         else
           -- maximum bit shift we can do, but has entered subnormal range
           -- one less as has entered subnormla
-          exp_shifted_left  <= to_unsigned(0,8);
+          exp_shifted_left  <= to_unsigned(0,10);
           mand_shifted_left <= shift_left(mand_shifted_right, to_integer(exp_shifted_right)-1);
         end if;
       else -- shift_left_req  = '0' then
@@ -345,8 +344,8 @@ begin
       end if;
       if srst_i = '1' then
         res_sign_zzzz     <= '0';
-        exp_shifted_left  <= to_unsigned(0,8);
-        mand_shifted_left <= to_unsigned(0,26);
+        exp_shifted_left  <= to_unsigned(0,10);
+        mand_shifted_left <= to_unsigned(0,48);
       end if;
     end if;
   end process bitshift_left_process;
