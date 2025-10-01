@@ -75,6 +75,7 @@ architecture test_bench of float_mult_simple_tb is
     wait until rising_edge(tb_clk);
     wait until rising_edge(tb_clk);
     wait until rising_edge(tb_clk);
+    wait until rising_edge(tb_clk);
     wait for CLOCK_HOLD;
     proc_expect := input_a * input_b;
     proc_output := slv_to_real(tb_c);
