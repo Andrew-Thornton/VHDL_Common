@@ -22,7 +22,7 @@ vsim float_mult_simple_tb
 
 add wave sim:/float_mult_simple_tb/*
 add wave -divider
-dd wave sim:/float_mult_simple_tb/dut/*
+add wave sim:/float_mult_simple_tb/dut/*
 
 run 100 ms
 
