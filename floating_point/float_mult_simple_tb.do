@@ -16,14 +16,14 @@
 vlib work
 vcom -2008 ./common_float_tools_pkg.vhd
 vcom -2008 ./float_mult.vhd
-#vcom -2008 ./float_mult_simple_tb.vhd
+vcom -2008 ./float_mult_simple_tb.vhd
 
-#vsim float_mult_tb
+vsim float_mult_simple_tb
 
-#add wave sim:/float_mult_tb/*
-#add wave -divider
-#add wave sim:/float_mult_tb/dut/*
+add wave sim:/float_mult_simple_tb/*
+add wave -divider
+dd wave sim:/float_mult_simple_tb/dut/*
 
-#run 100 ms
+run 100 ms
 
-#wave zoom full
+wave zoom full

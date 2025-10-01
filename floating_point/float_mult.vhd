@@ -20,7 +20,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity float_add is
+entity float_mult is
   port(
     clk_i  : in  std_logic;
     srst_i : in  std_logic;
@@ -28,9 +28,9 @@ entity float_add is
     b_i    : in  std_logic_vector(31 downto 0);
     c_o    : out std_logic_vector(31 downto 0)
   );
-end float_add;
+end float_mult;
 
-architecture rtl of float_add is
+architecture rtl of float_mult is
 
   --breaking up the inputs into the respective parts
   signal a_sign   : std_logic := '0';
