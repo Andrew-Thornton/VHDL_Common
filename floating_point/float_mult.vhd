@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
--- Copyright (C) 2024 Andrew Thornton - All Rights Reserved
+-- Copyright (C) 2025 Andrew Thornton - All Rights Reserved
 -- Please contact me via andrewthornton9619@gmail.com or via linkedin
 -- https://www.linkedin.com/in/andrew-thornton-976a95231/
 -- if you would like to use this code.
@@ -12,10 +12,8 @@
 -- 0.0  A. Thornton  2025-OCT-01 WIP
 -------------------------------------------------------------------------------
 -- Description
--- This module performs an addition of 2 numbers which comply with
+-- This module performs a multiplication of 2 numbers which comply with
 -- IEEE-754 Floating Point
--- At revision 1.0 this will not have support for Nan or Inf or subnormal
--- numbers but this will be added soon.
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -251,7 +249,7 @@ begin
     constant NAN_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000002";
     constant INF_MANT        : std_logic_vector(25 downto 0 ):= 26x"0000000";
     constant ZERO_EXP        : unsigned( 7 downto 0) := to_unsigned(0, 8);
-    constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,26);
+    constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
     constant MAX_EXP         : std_logic_vector( 7 downto 0) := x"FE";
     constant S_NORM_MAX_MANT : std_logic_vector(47 downto 0) := 26x"0FFFFFE";
 
@@ -259,49 +257,47 @@ begin
     constant MAND_1_0 : std_logic_vector(23 downto 0) := "010000000000000000000000"; --2 int 46 frac
   begin
     if rising_edge(clk_i) then
-      if rising_edge(clk_i) then
-        res_sign_zzz    <= res_sign_zz;
-        shift_left_req  <= '0';
-        if nan_det_zz = '1' then
-           exp_shifted_right  <= unsigned(NAN_INF_EXP);
-           mand_shifted_right <= unsigned(NAN_MANT);
-           res_sign_zzz       <= '0';
-        elsif inf_det_zz = '1' then
-           exp_shifted_right  <= unsigned(NAN_INF_EXP);
-           mand_shifted_right <= unsigned(INF_MANT);
-        elsif res_mand(47) = '1' then
-          -- bitgrowth occurred and we need to shift the exponent
-          -- unless infinity was reached
-          exp_shifted_right  <= res_exp_norm_nbs + 1;
-          mand_shifted_right <= shift_right(res_mand,1);
-          if MAX_EXP = std_logic_vector(res_exp_norm_nbs) then
-            exp_shifted_right  <= unsigned(NAN_INF_EXP);
-            mand_shifted_right <= unsigned(INF_MANT);
-          end if;
-        elsif res_exp_norm_nbs = ZERO_EXP then
-          -- is a subnormal number of 0
-          -- normally dont bit shift
-          exp_shifted_right  <= ZERO_EXP;
-          mand_shifted_right <= res_mand;
-          -- if has breaked out into normal numbers adjust accordingly
-          if res_mand(46) = '1' then
-            exp_shifted_right  <= to_unsigned(1,8);
-            mand_shifted_right <= res_mand;
-          end if;
-        elsif res_mand(46) = '1' then --result is 1<=X<2
-          exp_shifted_right  <= res_exp_norm_nbs;
-          mand_shifted_right <= res_mand;
-        else --res_mand(46) = '0' normal num, bitshiting required
-          shift_left_req     <= '1';
-          exp_shifted_right  <= res_exp_norm_nbs;
-          mand_shifted_right <= res_mand;
-        end if;
-        if srst_i = '1' then
-          shift_left_req     <= '0';
+      res_sign_zzz    <= res_sign_zz;
+      shift_left_req  <= '0';
+      if nan_det_zz = '1' then
+          exp_shifted_right  <= unsigned(NAN_INF_EXP);
+          mand_shifted_right <= unsigned(NAN_MANT);
           res_sign_zzz       <= '0';
-          exp_shifted_right  <= to_unsigned(0,8);
-          mand_shifted_right <= to_unsigned(0,26);
+      elsif inf_det_zz = '1' then
+          exp_shifted_right  <= unsigned(NAN_INF_EXP);
+          mand_shifted_right <= unsigned(INF_MANT);
+      elsif res_mand(47) = '1' then
+        -- bitgrowth occurred and we need to shift the exponent
+        -- unless infinity was reached
+        exp_shifted_right  <= res_exp_norm_nbs + 1;
+        mand_shifted_right <= shift_right(res_mand,1);
+        if MAX_EXP = std_logic_vector(res_exp_norm_nbs) then
+          exp_shifted_right  <= unsigned(NAN_INF_EXP);
+          mand_shifted_right <= unsigned(INF_MANT);
         end if;
+      elsif res_exp_norm_nbs = ZERO_EXP then
+        -- is a subnormal number of 0
+        -- normally dont bit shift
+        exp_shifted_right  <= ZERO_EXP;
+        mand_shifted_right <= res_mand;
+        -- if has breaked out into normal numbers adjust accordingly
+        if res_mand(46) = '1' then
+          exp_shifted_right  <= to_unsigned(1,8);
+          mand_shifted_right <= res_mand;
+        end if;
+      elsif res_mand(46) = '1' then --result is 1<=X<2
+        exp_shifted_right  <= res_exp_norm_nbs;
+        mand_shifted_right <= res_mand;
+      else --res_mand(46) = '0' normal num, bitshiting required
+        shift_left_req     <= '1';
+        exp_shifted_right  <= res_exp_norm_nbs;
+        mand_shifted_right <= res_mand;
+      end if;
+      if srst_i = '1' then
+        shift_left_req     <= '0';
+        res_sign_zzz       <= '0';
+        exp_shifted_right  <= to_unsigned(0,8);
+        mand_shifted_right <= to_unsigned(0,26);
       end if;
     end if;
   end process renorm_process;
