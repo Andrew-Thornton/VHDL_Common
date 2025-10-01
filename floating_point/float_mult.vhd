@@ -5,11 +5,11 @@
 -- if you would like to use this code.
 -------------------------------------------------------------------------------
 -- Author        : Andrew Thornton
--- Creation Date : 2024-May-03
--- Standard      : VDHL 2008
+-- Creation Date : 2025-Oct-01
+-- Standard      : VHDL 2008
 -------------------------------------------------------------------------------
--- Rev  Author       Date       Description
--- 0.0  A. Thornton  2024-05-03 WIP
+-- Rev  Author       Date        Description
+-- 0.0  A. Thornton  2025-OCT-01 WIP
 -------------------------------------------------------------------------------
 -- Description
 -- This module performs an addition of 2 numbers which comply with
@@ -35,31 +35,31 @@ end float_add;
 architecture rtl of float_add is
 
   --breaking up the inputs into the respective parts
-  signal a_sign   : std_logic;
-  signal b_sign   : std_logic;
-  signal a_exp    : unsigned( 7 downto 0);
-  signal b_exp    : unsigned( 7 downto 0);
-  signal a_frac   : unsigned(22 downto 0);
-  signal b_frac   : unsigned(22 downto 0);
+  signal a_sign   : std_logic := '0';
+  signal b_sign   : std_logic := '0';
+  signal a_exp    : unsigned( 7 downto 0) := (others => '0');
+  signal b_exp    : unsigned( 7 downto 0) := (others => '0');
+  signal a_frac   : unsigned(22 downto 0) := (others => '0');
+  signal b_frac   : unsigned(22 downto 0) := (others => '0');
 
   -- 1st clock cycle signals
-  signal res_sign : std_logic;
-  signal a_exp_sr : unsigned( 7 downto 0);
-  signal b_exp_sr : unsigned( 7 downto 0);
-  signal a_mand   : unsigned(23 downto 0); -- 1 uint and 23 frac
-  signal b_mand   : unsigned(23 downto 0); -- 1 uint and 23 frac
-  signal inf_det : std_logic;
-  signal nan_det : std_logic;
+  signal res_sign : std_logic := '0';
+  signal a_exp_sr : unsigned( 7 downto 0) := (others => '0');
+  signal b_exp_sr : unsigned( 7 downto 0) := (others => '0');
+  signal a_mand   : unsigned(23 downto 0) := (others => '0'); -- 1 uint and 23 frac
+  signal b_mand   : unsigned(23 downto 0) := (others => '0'); -- 1 uint and 23 frac
+  signal inf_det : std_logic := '0';
+  signal nan_det : std_logic := '0';
 
   -- 2nd and 3rd clock cycle multiplier signals
-  signal res_mand1 : unsigned(47 downto 0);
-  signal res_mand  : unsigned(47 downto 0);
+  signal res_mand1 : unsigned(47 downto 0) := (others => '0');
+  signal res_mand  : unsigned(47 downto 0) := (others => '0');
 
   -- 2nd and 3rd clock cycle exponent signals
-  signal a_exp_sr1   : unsigned( 7 downto 0);
-  signal b_exp_sr1   : unsigned( 7 downto 0);
-  signal res_exp_nbs : unsigned( 8 downto 0);
-  signal res_exp_norm_nbs : unsigned(9 downto 0);
+  signal a_exp_sr1        : unsigned( 7 downto 0) := (others => '0');
+  signal b_exp_sr1        : unsigned( 7 downto 0) := (others => '0');
+  signal res_exp_nbs      : unsigned( 8 downto 0) := (others => '0');
+  signal res_exp_norm_nbs : unsigned(9 downto 0) := (others => '0');
 
   -- 2nd to 3rd clock cycle shift register signals
   signal res_sign_z   : std_logic;
@@ -70,15 +70,16 @@ architecture rtl of float_add is
   signal nan_det_zz   : std_logic;
 
   --4th clock cycle bitshifted signals
-  signal res_mand_bs : std_logic_vector(23 downto 0);
-  signal exp_shifted_right : unsigned(46 downto 0);
+  signal res_mand_bs        : std_logic_vector(23 downto 0);
+  signal exp_shifted_right  : unsigned(46 downto 0);
   signal mand_shifted_right : unsigned(46 downto 0);
-
-  signal res_sign_zzz : std_logic;
+  signal shift_left_req     : std_logic;
+  signal res_sign_zzz       : std_logic;
+  signal shift_left_amount  : unsigned(5 downto 0);
 
   --5th clock cycle items
-  signal res_sign_zzzz : std_logic;
-  signal exp_shifted_left : unsigned(7 downto 0);
+  signal res_sign_zzzz     : std_logic;
+  signal exp_shifted_left  : unsigned(7 downto 0);
   signal mand_shifted_left : unsigned(46 downto 0); --2 int 46 frac
 
 begin
@@ -123,7 +124,7 @@ begin
   -- the result is going to be positive or negative.
   result_sign_process : process(clk_i)
   begin
-    if rising_edge(clk_i) then`
+    if rising_edge(clk_i) then
       -- (+) * (+) = (+) and (-) * (-) = (+)
       if (a_sign = b_sign) then
         res_sign <= '0';
@@ -264,7 +265,7 @@ begin
         if nan_det_zz = '1' then
            exp_shifted_right  <= unsigned(NAN_INF_EXP);
            mand_shifted_right <= unsigned(NAN_MANT);
-           result_sign_four    <= '0';
+           res_sign_zzz       <= '0';
         elsif inf_det_zz = '1' then
            exp_shifted_right  <= unsigned(NAN_INF_EXP);
            mand_shifted_right <= unsigned(INF_MANT);
@@ -288,11 +289,11 @@ begin
             mand_shifted_right <= res_mand;
           end if;
         elsif res_mand(46) = '1' then --result is 1<=X<2
-          exp_shifted_right  <= result_exp;
+          exp_shifted_right  <= res_exp_norm_nbs;
           mand_shifted_right <= res_mand;
         else --res_mand(46) = '0' normal num, bitshiting required
           shift_left_req     <= '1';
-          exp_shifted_right  <= result_exp;
+          exp_shifted_right  <= res_exp_norm_nbs;
           mand_shifted_right <= res_mand;
         end if;
         if srst_i = '1' then
@@ -356,7 +357,7 @@ begin
 
   -- output mapping
   c_o(31)           <= res_sign_zzzz;
-  c_o(30 downto 23) <= std_logic_vector(exp_shifted_left(8 downto 0));
+  c_o(30 downto 23) <= std_logic_vector(exp_shifted_left(7 downto 0));
   c_o(22 downto  0) <= std_logic_vector(mand_shifted_left(44 downto 22));
 
 end rtl;
