@@ -38,7 +38,7 @@ architecture test_bench of float_mult_simple_tb is
     );
   end component;
 
-  constant CLOCK_FREQ_MHZ : real := 1.0;
+  constant CLOCK_FREQ_MHZ : real := 100.0;
   constant CLOCK_PERIOD   : time := (1.0/CLOCK_FREQ_MHZ) * 1.0 us;
   constant CLOCK_HOLD     : time := CLOCK_PERIOD/10.0;
 
@@ -57,25 +57,25 @@ architecture test_bench of float_mult_simple_tb is
   signal tb_expect : real;
 
   procedure run_basic_test_case(
-    signal tb_clk          : in std_logic;
+    signal clk             : in std_logic;
     constant test_case_num : in natural;
     constant input_a       : in real;
     constant input_b       : in real;
-    signal tb_a            : out std_logic_vector(31 downto 0);
-    signal tb_b            : out std_logic_vector(31 downto 0)
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
   ) is
     variable proc_expect : real;
     variable proc_output : real;
   begin
       --test case 1 -- adding two positive numbers
     wait for CLOCK_HOLD;
-    tb_a   <= real_to_slv(input_a);
-    tb_b   <= real_to_slv(input_b);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
+    a   <= real_to_slv(input_a);
+    b   <= real_to_slv(input_b);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
     wait for CLOCK_HOLD;
     proc_expect := input_a * input_b;
     proc_output := slv_to_real(tb_c);
@@ -653,163 +653,163 @@ begin
     wait until tb_srst = '0';
 
     --test case 1 -- adding two positive numbers
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 1, input_a => 0.15625, input_b => 0.3125, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 1, input_a => 0.15625, input_b => 0.3125, a => tb_a , b => tb_b);
 
     --test case 2 -- adding two negative numbers
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 2, input_a => -0.15625, input_b => -0.3125, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 2, input_a => -0.15625, input_b => -0.3125, a => tb_a , b => tb_b);
 
     --test case 3 -- adding one positive and one negative number
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 3, input_a => 0.15625, input_b => -0.3125, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 3, input_a => 0.15625, input_b => -0.3125, a => tb_a , b => tb_b);
 
     --test case 4 -- adding one positive and one negative number
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 4, input_a => -0.15625, input_b => 0.3125, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 4, input_a => -0.15625, input_b => 0.3125, a => tb_a , b => tb_b);
 
     --test case 5 -- adding two positive numbers
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 5, input_a => 0.3125, input_b => 0.15625, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 5, input_a => 0.3125, input_b => 0.15625, a => tb_a , b => tb_b);
 
     --test case 6 -- adding two negative numbers
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 6, input_a => -0.3125, input_b => -0.15625, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 6, input_a => -0.3125, input_b => -0.15625, a => tb_a , b => tb_b);
 
     --test case 7 -- adding one positive and one negative number
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 7, input_a => -0.3125, input_b => 0.15625, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 7, input_a => -0.3125, input_b => 0.15625, a => tb_a , b => tb_b);
 
     --test case 8 -- adding one positive and one negative number
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 8, input_a => 0.3125, input_b => -0.15625, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 8, input_a => 0.3125, input_b => -0.15625, a => tb_a , b => tb_b);
 
     -- test case 9 -- two zeros
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 9, input_a => 0.0, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 9, input_a => 0.0, input_b => 0.0, a => tb_a , b => tb_b);
 
     -- test case 10 -- zero and positive
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 10, input_a => 0.0, input_b => 0.125, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 10, input_a => 0.0, input_b => 0.125, a => tb_a , b => tb_b);
 
     -- test case 11 -- zero and negative
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 11, input_a => 0.0, input_b => 15.875, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 11, input_a => 0.0, input_b => 15.875, a => tb_a , b => tb_b);
 
     -- test case 12 -- positive and zero
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 12, input_a => 0.00048, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 12, input_a => 0.00048, input_b => 0.0, a => tb_a , b => tb_b);
 
     -- test case 13 -- negative and zero
-    run_basic_test_case(tb_clk => tb_clk, test_case_num => 13, input_a => -100000.0, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+    run_basic_test_case(clk => tb_clk, test_case_num => 13, input_a => -100000.0, input_b => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 14 -- NAN test
-    -- run_nan_test_case_input_b(tb_clk => tb_clk, test_case_num => 14, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_test_case_input_b(clk => tb_clk, test_case_num => 14, input_b => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 15 -- NAN test
-    -- run_nan_test_case_input_b(tb_clk => tb_clk, test_case_num => 15, input_b =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_test_case_input_b(clk => tb_clk, test_case_num => 15, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 16 -- NAN test
-    -- run_nan_test_case_input_b(tb_clk => tb_clk, test_case_num => 16, input_b => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_test_case_input_b(clk => tb_clk, test_case_num => 16, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 17 -- NAN test
-    -- run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 17, input_a => 0.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_test_case_input_a(clk => tb_clk, test_case_num => 17, input_a => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 18 -- NAN test
-    -- run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 18, input_a =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_test_case_input_a(clk => tb_clk, test_case_num => 18, input_a =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 19 -- NAN test
-    -- run_nan_test_case_input_a(tb_clk => tb_clk, test_case_num => 19, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_test_case_input_a(clk => tb_clk, test_case_num => 19, input_a => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 20 -- NaN + NaN
-    -- run_nan_nan_test_case(tb_clk => tb_clk, test_case_num => 20, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_nan_test_case(clk => tb_clk, test_case_num => 20, a => tb_a , b => tb_b);
 
     -- -- test case 21 -- -Inf + Inf
-    -- run_ninf_pinf_test_case(tb_clk => tb_clk, test_case_num => 21, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_pinf_test_case(clk => tb_clk, test_case_num => 21, a => tb_a , b => tb_b);
 
     -- -- test case 22 -- -Inf + NaN
-    -- run_ninf_nan_test_case(tb_clk => tb_clk, test_case_num => 22, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_nan_test_case(clk => tb_clk, test_case_num => 22, a => tb_a , b => tb_b);
 
     -- -- test case 23 -- + NaN - Inf
-    -- run_nan_ninf_test_case(tb_clk => tb_clk, test_case_num => 23, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_ninf_test_case(clk => tb_clk, test_case_num => 23, a => tb_a , b => tb_b);
 
     -- -- test case 24 -- inf + NaN
-    -- run_inf_nan_test_case(tb_clk => tb_clk, test_case_num => 24, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_nan_test_case(clk => tb_clk, test_case_num => 24, a => tb_a , b => tb_b);
 
     -- -- test case 25 -- NaN + inf
-    -- run_nan_inf_test_case(tb_clk => tb_clk, test_case_num => 25, tb_a => tb_a , tb_b => tb_b);
+    -- run_nan_inf_test_case(clk => tb_clk, test_case_num => 25, a => tb_a , b => tb_b);
 
     -- --test case 26 -- trying to make 0 again
-    -- run_basic_test_case(tb_clk => tb_clk, test_case_num => 26, input_a => 64.0, input_b => -64.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_basic_test_case(clk => tb_clk, test_case_num => 26, input_a => 64.0, input_b => -64.0, a => tb_a , b => tb_b);
 
     -- --test case 27 -- trying to make 0 again
-    -- run_basic_test_case(tb_clk => tb_clk, test_case_num => 27, input_a => 1000.0, input_b => -1000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_basic_test_case(clk => tb_clk, test_case_num => 27, input_a => 1000.0, input_b => -1000.0, a => tb_a , b => tb_b);
 
     -- -- test case 28 -- +inf and numbers
-    -- run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 28, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 28, input_b => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 29 -- +inf and numbers
-    -- run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 29, input_b =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 29, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 30 -- +inf and numbers
-    -- run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 30, input_b => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 30, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 31 -- +inf and numbers
-    -- run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 31, input_b => -4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 31, input_b => -4.0, a => tb_a , b => tb_b);
 
     -- -- test case 32 -- +inf and numbers
-    -- run_inf_test_case_input_b(tb_clk => tb_clk, test_case_num => 32, input_b => 4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 32, input_b => 4.0, a => tb_a , b => tb_b);
 
     -- -- test case 33 -- +inf and numbers
-    -- run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 33, input_a => 0.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_a(clk => tb_clk, test_case_num => 33, input_a => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 34 -- +inf and numbers
-    -- run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 34, input_a =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_a(clk => tb_clk, test_case_num => 34, input_a =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 35 -- +inf and numbers
-    -- run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 35, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_a(clk => tb_clk, test_case_num => 35, input_a => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 36 -- +inf and numbers
-    -- run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 36, input_a => -4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_a(clk => tb_clk, test_case_num => 36, input_a => -4.0, a => tb_a , b => tb_b);
 
     -- -- test case 37 -- +inf and numbers
-    -- run_inf_test_case_input_a(tb_clk => tb_clk, test_case_num => 37, input_a => 4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_test_case_input_a(clk => tb_clk, test_case_num => 37, input_a => 4.0, a => tb_a , b => tb_b);
 
     -- -- test case 38 -- +inf and numbers
-    -- run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 38, input_b => 0.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 38, input_b => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 39 -- +inf and numbers
-    -- run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 39, input_b =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 39, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 40 -- -inf and numbers
-    -- run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 40, input_b => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 40, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 41 -- -inf and numbers
-    -- run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 41, input_b => -4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 41, input_b => -4.0, a => tb_a , b => tb_b);
 
     -- -- test case 42 -- -inf and numbers
-    -- run_ninf_test_case_input_b(tb_clk => tb_clk, test_case_num => 42, input_b => 4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 42, input_b => 4.0, a => tb_a , b => tb_b);
 
     -- -- test case 43 -- -inf and numbers
-    -- run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 43, input_a => 0.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 43, input_a => 0.0, a => tb_a , b => tb_b);
 
     -- -- test case 44 -- -inf and numbers
-    -- run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 44, input_a =>  340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 44, input_a =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 45 -- -inf and numbers
-    -- run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 45, input_a => -340282346640000000000000000000000000000.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 45, input_a => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
     -- -- test case 46 -- -inf and numbers
-    -- run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 46, input_a => -4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 46, input_a => -4.0, a => tb_a , b => tb_b);
 
     -- -- test case 47 -- -inf and numbers
-    -- run_ninf_test_case_input_a(tb_clk => tb_clk, test_case_num => 47, input_a => 4.0, tb_a => tb_a , tb_b => tb_b);
+    -- run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 47, input_a => 4.0, a => tb_a , b => tb_b);
 
     -- -- test case 48 -- +inf and +inf = +inf
-    -- run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 48, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_inf_test_case(clk => tb_clk, test_case_num => 48, a => tb_a , b => tb_b);
 
     -- -- test case 49 -- -inf and -inf = -inf
-    -- run_inf_inf_test_case(tb_clk => tb_clk, test_case_num => 49, tb_a => tb_a , tb_b => tb_b);
+    -- run_inf_inf_test_case(clk => tb_clk, test_case_num => 49, a => tb_a , b => tb_b);
 
     -- -- test case 50 -- 3.4028234664 x 10^38 + 3.4028234664 x 10^38 = +inf
-    -- run_large_positive_to_inf_test_case(tb_clk => tb_clk, test_case_num => 50, tb_a => tb_a , tb_b => tb_b);
+    -- run_large_positive_to_inf_test_case(clk => tb_clk, test_case_num => 50, a => tb_a , b => tb_b);
 
     -- -- test case 51 -- -3.4028234664 x 10^38 + -3.4028234664 x 10^38 = -inf
-    -- run_large_negative_to_ninf_test_case(tb_clk => tb_clk, test_case_num => 51, tb_a => tb_a , tb_b => tb_b);
+    -- run_large_negative_to_ninf_test_case(clk => tb_clk, test_case_num => 51, a => tb_a , b => tb_b);
 
     -- -- test case 52 -- 1.4012984643 × 10^-45 + 1.4012984643 × 10^-45 = 2.8 x 10^-45
-    -- run_subnormal_test_case_1(tb_clk => tb_clk, test_case_num => 52, tb_a => tb_a , tb_b => tb_b);
+    -- run_subnormal_test_case_1(clk => tb_clk, test_case_num => 52, a => tb_a , b => tb_b);
 
     -- -- test case 53 -- 1.1754942107 x 10^-38 + 1.1754942107 x 10^-38 = -- 2.3509887016 x 10^-38
-    -- run_subnormal_test_case_2(tb_clk => tb_clk, test_case_num => 53, tb_a => tb_a , tb_b => tb_b);
+    -- run_subnormal_test_case_2(clk => tb_clk, test_case_num => 53, a => tb_a , b => tb_b);
 
     -- report "Testing Complete, all passed"
     -- severity failure;
