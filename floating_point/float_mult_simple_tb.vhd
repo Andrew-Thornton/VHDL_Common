@@ -113,10 +113,11 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"4ccccc";
     b   <= real_to_slv(input_b);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
-    wait until rising_edge(tb_clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";

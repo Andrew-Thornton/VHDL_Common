@@ -152,9 +152,9 @@ begin
     constant SUB_NORM_EXP   : std_logic_vector( 7 downto 0) := x"00";
     constant INF_MAND       : std_logic_vector(22 downto 0) := 23x"000000";
   begin
-    nan_det   <= '0';
-    inf_det   <= '0';
     if rising_edge(clk_i) then
+      nan_det   <= '0';
+      inf_det   <= '0';
       if (std_logic_vector(a_exp) = INF_OR_NAN_EXP) then
         if (std_logic_vector(a_frac) = INF_MAND) then
           inf_det <= '1';
@@ -250,7 +250,7 @@ begin
   -- note more to this here, andrew check soon, but need to make sure that we account for subnormal numbers
   renorm_process : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
-    constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000400000";
+    constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000A00000";
     constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
     constant ZERO_EXP        : unsigned( 9 downto 0) := to_unsigned(0, 10);
     constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
