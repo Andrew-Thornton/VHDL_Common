@@ -218,5 +218,4 @@ begin
     end if;
   end process output_calculator_proc;
 
-
 end test_bench;
