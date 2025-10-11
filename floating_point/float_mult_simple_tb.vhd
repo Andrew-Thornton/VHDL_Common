@@ -100,7 +100,7 @@ architecture test_bench of float_mult_simple_tb is
   end procedure run_basic_test_case;
 
   procedure run_nan_test_case_input_b(
-    signal clk          : in std_logic;
+    signal clk             : in std_logic;
     constant test_case_num : in natural;
     constant input_b       : in real;
     signal a               : out std_logic_vector(31 downto 0);
@@ -160,10 +160,10 @@ architecture test_bench of float_mult_simple_tb is
   end procedure run_nan_test_case_input_a;
 
   procedure run_nan_nan_test_case(
-    signal clk          : in std_logic;
+    signal clk             : in std_logic;
     constant test_case_num : in natural;
-    signal a            : out std_logic_vector(31 downto 0);
-    signal b            : out std_logic_vector(31 downto 0)
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
   ) is
     constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
     constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
@@ -218,166 +218,190 @@ architecture test_bench of float_mult_simple_tb is
     report "test passed";
   end procedure run_ninf_pinf_test_case;
 
-  -- procedure run_ninf_nan_test_case(
-  --   signal tb_clk          : in std_logic;
-  --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --     --test case 1 -- adding two positive numbers
-  --   wait for CLOCK_HOLD;
-  --   tb_a   <= '1' & x"FF" & 23x"000000";
-  --   tb_b   <= '0' & x"FF" & 23x"4ccccc";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :NaN";
-  --   assert (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :NaN";
-  --   report "test passed";
-  -- end procedure run_ninf_nan_test_case;
+  procedure run_ninf_nan_test_case(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    a   <= '1' & x"FF" & 23x"000000";
+    b   <= '0' & x"FF" & 23x"4ccccc";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_ninf_nan_test_case;
 
-  -- procedure run_nan_ninf_test_case(
-  --   signal tb_clk          : in std_logic;
-  --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --     --test case 1 -- adding two positive numbers
-  --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"FF" & 23x"4ccccc";
-  --   tb_b   <= '1' & x"FF" & 23x"000000";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :NaN";
-  --   assert (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :NaN";
-  --   report "test passed";
-  -- end procedure run_nan_ninf_test_case;
+  procedure run_nan_ninf_test_case(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FF" & 23x"4ccccc";
+    b   <= '1' & x"FF" & 23x"000000";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_ninf_test_case;
 
-  -- procedure run_nan_inf_test_case(
-  --   signal tb_clk          : in std_logic;
-  --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --     --test case 1 -- adding two positive numbers
-  --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"FF" & 23x"4ccccc";
-  --   tb_b   <= '0' & x"FF" & 23x"000000";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :NaN";
-  --   assert (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :NaN";
-  --   report "test passed";
-  -- end procedure run_nan_inf_test_case;
+  procedure run_nan_inf_test_case(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FF" & 23x"4ccccc";
+    b   <= '0' & x"FF" & 23x"000000";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_nan_inf_test_case;
 
-  -- procedure run_inf_nan_test_case(
-  --   signal tb_clk          : in std_logic;
-  --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --     --test case 1 -- adding two positive numbers
-  --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"FF" & 23x"000000";
-  --   tb_b   <= '0' & x"FF" & 23x"4ccccc";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :NaN";
-  --   assert (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :NaN";
-  --   report "test passed";
-  -- end procedure run_inf_nan_test_case;
+  procedure run_inf_nan_test_case(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_not_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FF" & 23x"000000";
+    b   <= '0' & x"FF" & 23x"4ccccc";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :NaN";
+    assert (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
+    report "test failed"
+    severity failure;
+    report "DUT Output         :NaN";
+    report "test passed";
+  end procedure run_inf_nan_test_case;
 
-  -- procedure run_inf_test_case_input_b(
-  --   signal tb_clk          : in std_logic;
-  --   constant test_case_num : in natural;
-  --   constant input_b       : in real;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --     --test case 1 -- adding two positive numbers
-  --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"FF" & 23x"000000";
-  --   tb_b   <= real_to_slv(input_b);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :Inf";
-  --   assert (tb_c(31) = '0') and
-  --          (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) = mand_expect) --ensure infinity
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :Inf";
-  --   report "test passed";
-  -- end procedure run_inf_test_case_input_b;
+  procedure run_inf_test_case_input_b(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    constant input_b       : in real;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+      --test case 1 -- adding two positive numbers
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FF" & 23x"000000";
+    b   <= real_to_slv(input_b);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    if b(30 downto 0) = "0000000000000000000000000000000" then
+      assert (tb_c(31) = '0') and
+            (tb_c(30 downto 23) = (exp_expect)) and
+            (tb_c(22 downto  0) /= mand_expect) --ensure nan
+      report "test failed"
+      severity failure;
+      report "DUT Output         :Nan";
+      report "test passed";
+    elsif b(31) = '0' then
+      assert (tb_c(31) = '0') and
+            (tb_c(30 downto 23) = (exp_expect)) and
+            (tb_c(22 downto  0) = mand_expect) --ensure pos infinity
+      report "test failed"
+      severity failure;
+      report "DUT Output         :inf";
+      report "test passed";
+    elsif b(31) = '1' then
+      assert (tb_c(31) = '1') and 
+            (tb_c(30 downto 23) = (exp_expect)) and
+            (tb_c(22 downto  0) = mand_expect) --ensure neg infinity
+      report "test failed"
+      severity failure;
+      report "DUT Output         :ninf";
+      report "test passed";
+    end if;
+  end procedure run_inf_test_case_input_b;
 
   -- procedure run_inf_test_case_input_a(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
   --   constant input_a       : in real;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --     --test case 1 -- adding two positive numbers
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= real_to_slv(input_a);
-  --   tb_b   <= '0' & x"FF" & 23x"000000";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= real_to_slv(input_a);
+  --   b   <= '0' & x"FF" & 23x"000000";
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :Inf";
@@ -391,23 +415,24 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_inf_test_case_input_a;
 
   -- procedure run_ninf_test_case_input_b(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
   --   constant input_b       : in real;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --     --test case 1 -- adding two positive numbers
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '1' & x"FF" & 23x"000000";
-  --   tb_b   <= real_to_slv(input_b);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '1' & x"FF" & 23x"000000";
+  --   b   <= real_to_slv(input_b);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :-Inf";
@@ -421,23 +446,24 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_ninf_test_case_input_b;
 
   -- procedure run_ninf_test_case_input_a(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
   --   constant input_a       : in real;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --     --test case 1 -- adding two positive numbers
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= real_to_slv(input_a);
-  --   tb_b   <= '1' & x"FF" & 23x"000000";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= real_to_slv(input_a);
+  --   b   <= '1' & x"FF" & 23x"000000";
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :-Inf";
@@ -451,22 +477,23 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_ninf_test_case_input_a;
 
   -- procedure run_ninf_ninf_test_case(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --     --test case 1 -- adding two positive numbers
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '1' & x"FF" & 23x"000000";
-  --   tb_b   <= '1' & x"FF" & 23x"000000";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '1' & x"FF" & 23x"000000";
+  --   b   <= '1' & x"FF" & 23x"000000";
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :-Inf";
@@ -480,22 +507,23 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_ninf_ninf_test_case;
 
   -- procedure run_inf_inf_test_case(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --     --test case 1 -- adding two positive numbers
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"FF" & 23x"000000";
-  --   tb_b   <= '0' & x"FF" & 23x"000000";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '0' & x"FF" & 23x"000000";
+  --   b   <= '0' & x"FF" & 23x"000000";
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :Inf";
@@ -509,22 +537,23 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_inf_inf_test_case;
 
   -- procedure run_large_positive_to_inf_test_case(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --   -- adding two positive numbers which should overflow into infinity
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"FE" & 23x"7FFFFF";
-  --   tb_b   <= '0' & x"FE" & 23x"7FFFFF";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '0' & x"FE" & 23x"7FFFFF";
+  --   b   <= '0' & x"FE" & 23x"7FFFFF";
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :Inf";
@@ -538,22 +567,23 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_large_positive_to_inf_test_case;
 
   -- procedure run_large_negative_to_ninf_test_case(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
   -- begin
   --   -- adding two positive numbers which should overflow into infinity
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '1' & x"FE" & 23x"7FFFFF";
-  --   tb_b   <= '1' & x"FE" & 23x"7FFFFF";
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '1' & x"FE" & 23x"7FFFFF";
+  --   b   <= '1' & x"FE" & 23x"7FFFFF";
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was :-Inf";
@@ -567,22 +597,23 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_large_negative_to_ninf_test_case;
 
   -- procedure run_subnormal_test_case_1(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"00";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000002";
   -- begin
   --   -- adding two positive sub normal numbers which result in a subnormal number
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"00" & 23x"000001"; -- 1.4012984643 x 10^-45
-  --   tb_b   <= '0' & x"00" & 23x"000001"; -- 1.4012984643 x 10^-45
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '0' & x"00" & 23x"000001"; -- 1.4012984643 x 10^-45
+  --   b   <= '0' & x"00" & 23x"000001"; -- 1.4012984643 x 10^-45
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was : 2.8025969286 x 10^-45";
@@ -596,22 +627,23 @@ architecture test_bench of float_mult_simple_tb is
   -- end procedure run_subnormal_test_case_1;
 
   -- procedure run_subnormal_test_case_2(
-  --   signal tb_clk          : in std_logic;
+  --   signal clk             : in std_logic;
   --   constant test_case_num : in natural;
-  --   signal tb_a            : out std_logic_vector(31 downto 0);
-  --   signal tb_b            : out std_logic_vector(31 downto 0)
+  --   signal a               : out std_logic_vector(31 downto 0);
+  --   signal b               : out std_logic_vector(31 downto 0)
   -- ) is
   --   constant exp_expect : std_logic_vector(7 downto 0) := x"01";
   --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"7FFFFE";
   -- begin
   --   -- adding two sub normal numbers which result in a normal number
   --   wait for CLOCK_HOLD;
-  --   tb_a   <= '0' & x"00" & 23x"7FFFFF"; -- 1.1754942107 x 10^-38
-  --   tb_b   <= '0' & x"00" & 23x"7FFFFF"; -- 1.1754942107 x 10^-38
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
-  --   wait until rising_edge(tb_clk);
+  --   a   <= '0' & x"00" & 23x"7FFFFF"; -- 1.1754942107 x 10^-38
+  --   b   <= '0' & x"00" & 23x"7FFFFF"; -- 1.1754942107 x 10^-38
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
+  --   wait until rising_edge(clk);
   --   wait for CLOCK_HOLD;
   --   report "Test case " & integer'image(test_case_num);
   --   report "Expected Value was : 2.3509887016 x 10^-38";
@@ -720,38 +752,38 @@ begin
     -- test case 21 -- -Inf + Inf
     run_ninf_pinf_test_case(clk => tb_clk, test_case_num => 21, a => tb_a , b => tb_b);
 
-    -- -- test case 22 -- -Inf + NaN
-    -- run_ninf_nan_test_case(clk => tb_clk, test_case_num => 22, a => tb_a , b => tb_b);
+    -- test case 22 -- -Inf + NaN
+    run_ninf_nan_test_case(clk => tb_clk, test_case_num => 22, a => tb_a , b => tb_b);
 
-    -- -- test case 23 -- + NaN - Inf
-    -- run_nan_ninf_test_case(clk => tb_clk, test_case_num => 23, a => tb_a , b => tb_b);
+    -- test case 23 -- + NaN - Inf
+    run_nan_ninf_test_case(clk => tb_clk, test_case_num => 23, a => tb_a , b => tb_b);
 
-    -- -- test case 24 -- inf + NaN
-    -- run_inf_nan_test_case(clk => tb_clk, test_case_num => 24, a => tb_a , b => tb_b);
+    -- test case 24 -- inf + NaN
+    run_inf_nan_test_case(clk => tb_clk, test_case_num => 24, a => tb_a , b => tb_b);
 
-    -- -- test case 25 -- NaN + inf
-    -- run_nan_inf_test_case(clk => tb_clk, test_case_num => 25, a => tb_a , b => tb_b);
+    -- test case 25 -- NaN + inf
+    run_nan_inf_test_case(clk => tb_clk, test_case_num => 25, a => tb_a , b => tb_b);
 
-    -- --test case 26 -- trying to make 0 again
-    -- run_basic_test_case(clk => tb_clk, test_case_num => 26, input_a => 64.0, input_b => -64.0, a => tb_a , b => tb_b);
+    --test case 26 -- trying to make 0 again
+    run_basic_test_case(clk => tb_clk, test_case_num => 26, input_a => 64.0, input_b => -64.0, a => tb_a , b => tb_b);
 
-    -- --test case 27 -- trying to make 0 again
-    -- run_basic_test_case(clk => tb_clk, test_case_num => 27, input_a => 1000.0, input_b => -1000.0, a => tb_a , b => tb_b);
+    --test case 27 -- trying to make 0 again
+    run_basic_test_case(clk => tb_clk, test_case_num => 27, input_a => 1000.0, input_b => -1000.0, a => tb_a , b => tb_b);
 
-    -- -- test case 28 -- +inf and numbers
-    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 28, input_b => 0.0, a => tb_a , b => tb_b);
+    -- test case 28 -- +inf and numbers
+    run_inf_test_case_input_b(clk => tb_clk, test_case_num => 28, input_b => 0.0, a => tb_a , b => tb_b);
 
-    -- -- test case 29 -- +inf and numbers
-    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 29, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
+    -- test case 29 -- +inf and numbers
+    run_inf_test_case_input_b(clk => tb_clk, test_case_num => 29, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- -- test case 30 -- +inf and numbers
-    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 30, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
+    -- test case 30 -- +inf and numbers
+    run_inf_test_case_input_b(clk => tb_clk, test_case_num => 30, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- -- test case 31 -- +inf and numbers
-    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 31, input_b => -4.0, a => tb_a , b => tb_b);
+    -- test case 31 -- +inf and numbers
+    run_inf_test_case_input_b(clk => tb_clk, test_case_num => 31, input_b => -4.0, a => tb_a , b => tb_b);
 
-    -- -- test case 32 -- +inf and numbers
-    -- run_inf_test_case_input_b(clk => tb_clk, test_case_num => 32, input_b => 4.0, a => tb_a , b => tb_b);
+    -- test case 32 -- +inf and numbers
+    run_inf_test_case_input_b(clk => tb_clk, test_case_num => 32, input_b => 4.0, a => tb_a , b => tb_b);
 
     -- -- test case 33 -- +inf and numbers
     -- run_inf_test_case_input_a(clk => tb_clk, test_case_num => 33, input_a => 0.0, a => tb_a , b => tb_b);
