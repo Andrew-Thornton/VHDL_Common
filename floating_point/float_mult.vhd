@@ -327,7 +327,10 @@ begin
     if rising_edge(clk_i) then
       res_sign_zzzz <= res_sign_zzz;
       if shift_left_req  = '1' then
-        if (to_integer(exp_shifted_right) > shift_left_amount ) then
+        if to_integer(shift_left_amount) = 0 then
+          exp_shifted_left  <= to_unsigned(0,10);
+          mand_shifted_left <= to_unsigned(0,48);
+        elsif (to_integer(exp_shifted_right) > shift_left_amount ) then
           -- moved into a normal number still
           exp_shifted_left  <= exp_shifted_right - shift_left_amount ;
           mand_shifted_left <= shift_left(mand_shifted_right, to_integer(shift_left_amount));
