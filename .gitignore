@@ -8,6 +8,7 @@
 *.bak
 *.o
 *.cf
+*.vcd
 
 **/modelsim.ini
 **/vlog.opt
