@@ -54,10 +54,8 @@ architecture rtl of float_mult is
   signal res_mand  : unsigned(47 downto 0) := (others => '0');
 
   -- 2nd and 3rd clock cycle exponent signals
-  signal a_exp_sr1        : unsigned( 7 downto 0) := (others => '0');
-  signal b_exp_sr1        : unsigned( 7 downto 0) := (others => '0');
-  signal res_exp_nbs      : unsigned( 8 downto 0) := (others => '0');
-  signal res_exp_norm_nbs : unsigned(9 downto 0) := (others => '0');
+  signal res_exp_nbs      : unsigned(8 downto 0) := to_unsigned(0,9);
+  signal res_exp_norm_nbs : unsigned(9 downto 0) := to_unsigned(127,10);
 
   -- 2nd to 3rd clock cycle shift register signals
   signal res_sign_z   : std_logic;
@@ -210,10 +208,10 @@ begin
   begin
     if rising_edge(clk_i) then
       res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr);
-      res_exp_norm_nbs <= ('0' & res_exp_nbs) + 127;
+      res_exp_norm_nbs <= ('0' & res_exp_nbs) - to_unsigned(127,10);
       if srst_i = '1' then
         res_exp_nbs      <= to_unsigned(0,9);
-        res_exp_norm_nbs <= to_unsigned(0,10);
+        res_exp_norm_nbs <= to_unsigned(897,10);
       end if;
     end if;
   end process exponent_res_pre_shift_process;
@@ -353,6 +351,6 @@ begin
   -- output mapping
   c_o(31)           <= res_sign_zzzz;
   c_o(30 downto 23) <= std_logic_vector(exp_shifted_left(7 downto 0));
-  c_o(22 downto  0) <= std_logic_vector(mand_shifted_left(44 downto 22));
+  c_o(22 downto  0) <= std_logic_vector(mand_shifted_left(45 downto 23));
 
 end rtl;

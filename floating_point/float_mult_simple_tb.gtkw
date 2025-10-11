@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Sat Oct 11 03:01:04 2025
+[*] Sat Oct 11 03:52:30 2025
 [*]
 [dumpfile] "/home/andrew/code/VHDL_Common/floating_point/float_mult_simple_tb_wave.vcd"
-[dumpfile_mtime] "Sat Oct 11 02:57:37 2025"
-[dumpfile_size] 3969
+[dumpfile_mtime] "Sat Oct 11 03:43:25 2025"
+[dumpfile_size] 3865
 [savefile] "/home/andrew/code/VHDL_Common/floating_point/float_mult_simple_tb.gtkw"
-[timestart] 0
-[size] 2560 1348
-[pos] -1 -1
-*-24.600000 91000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 137248000
+[size] 1280 1348
+[pos] -641 -1
+*-19.800001 140490000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] float_mult_simple_tb.
 [sst_width] 209
 [signals_width] 222
@@ -19,9 +19,12 @@
 -dut ports
 @28
 float_mult_simple_tb.tb_clk
-@22
 float_mult_simple_tb.tb_a[31:0]
 float_mult_simple_tb.tb_b[31:0]
+@40020
+float_mult_simple_tb.tb_a[31:0]
+float_mult_simple_tb.tb_b[31:0]
+@22
 float_mult_simple_tb.tb_c[31:0]
 @28
 float_mult_simple_tb.tb_expect
@@ -31,21 +34,32 @@ float_mult_simple_tb.tb_srst
 -clock_cycle_0
 @28
 float_mult_simple_tb.dut.a_sign
-@22
+@24
 float_mult_simple_tb.dut.a_exp[7:0]
+@28
+float_mult_simple_tb.dut.a_frac[22:0]
+@40000024
+[fpshift_count] 23
 float_mult_simple_tb.dut.a_frac[22:0]
 @28
 float_mult_simple_tb.dut.b_sign
-@22
+@24
 float_mult_simple_tb.dut.b_exp[7:0]
+@28
+float_mult_simple_tb.dut.b_frac[22:0]
+@40000024
+[fpshift_count] 23
 float_mult_simple_tb.dut.b_frac[22:0]
 @200
 -clock_cycle_1
 @28
 float_mult_simple_tb.dut.res_sign
-@22
+@40000024
+[fpshift_count] 23
 float_mult_simple_tb.dut.a_mand[23:0]
+[fpshift_count] 23
 float_mult_simple_tb.dut.b_mand[23:0]
+@24
 float_mult_simple_tb.dut.a_exp_sr[7:0]
 float_mult_simple_tb.dut.b_exp_sr[7:0]
 @28
@@ -55,9 +69,14 @@ float_mult_simple_tb.dut.nan_det
 -clock_cycle_2
 @28
 float_mult_simple_tb.dut.res_sign_z
-@22
-float_mult_simple_tb.dut.res_mand1[47:0]
+@24
 float_mult_simple_tb.dut.res_exp_nbs[8:0]
+@40000028
+[fpshift_count] 46
+float_mult_simple_tb.dut.res_mand1[47:0]
+@40000024
+[fpshift_count] 46
+float_mult_simple_tb.dut.res_mand1[47:0]
 @28
 float_mult_simple_tb.dut.nan_det_z
 float_mult_simple_tb.dut.inf_det_z
@@ -65,8 +84,12 @@ float_mult_simple_tb.dut.inf_det_z
 -clock_cycle_3
 @28
 float_mult_simple_tb.dut.res_sign_zz
-@22
+@24
 float_mult_simple_tb.dut.res_exp_norm_nbs[9:0]
+@28
+float_mult_simple_tb.dut.res_mand[47:0]
+@40000024
+[fpshift_count] 46
 float_mult_simple_tb.dut.res_mand[47:0]
 @28
 float_mult_simple_tb.dut.inf_det_zz
@@ -76,20 +99,47 @@ float_mult_simple_tb.dut.nan_det_zz
 @28
 float_mult_simple_tb.dut.res_sign_zzz
 float_mult_simple_tb.dut.shift_left_req
-@22
+@24
 float_mult_simple_tb.dut.exp_shifted_right[9:0]
+@28
 float_mult_simple_tb.dut.mand_shifted_right[47:0]
+@40000024
+[fpshift_count] 46
+float_mult_simple_tb.dut.mand_shifted_right[47:0]
+@24
 float_mult_simple_tb.dut.shift_left_amount[5:0]
 @200
 -clock_cycle_5
 @28
 float_mult_simple_tb.dut.res_sign_zzzz
-@22
+@c00028
 float_mult_simple_tb.dut.exp_shifted_left[9:0]
+@28
+(0)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(1)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(2)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(3)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(4)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(5)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(6)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(7)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(8)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+(9)float_mult_simple_tb.dut.exp_shifted_left[9:0]
+@1401208
+-group_end
+@24
+float_mult_simple_tb.dut.exp_shifted_left[9:0]
+@28
+float_mult_simple_tb.dut.mand_shifted_left[47:0]
+@29
 float_mult_simple_tb.dut.mand_shifted_left[47:0]
 @200
 -output
-@23
+@28
+float_mult_simple_tb.tb_c[31:0]
+@40020
+float_mult_simple_tb.tb_c[31:0]
+@22
 float_mult_simple_tb.dut.c_o[31:0]
 [pattern_trace] 1
 [pattern_trace] 0
