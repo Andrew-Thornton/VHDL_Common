@@ -208,10 +208,16 @@ begin
   begin
     if rising_edge(clk_i) then
       res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr);
-      res_exp_norm_nbs <= ('0' & res_exp_nbs) - to_unsigned(127,10);
+      -- I expect this to need bitshifting for cases where we have entered sub normal
+      -- need to add test
+      if res_exp_nbs > to_unsigned(127,9) then
+        res_exp_norm_nbs <= ('0' & res_exp_nbs) - to_unsigned(127,10);
+      else
+        res_exp_norm_nbs <= to_unsigned(0,10);
+      end if;
       if srst_i = '1' then
         res_exp_nbs      <= to_unsigned(0,9);
-        res_exp_norm_nbs <= to_unsigned(897,10);
+        res_exp_norm_nbs <= to_unsigned(0,10);
       end if;
     end if;
   end process exponent_res_pre_shift_process;
