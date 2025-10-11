@@ -1,11 +1,16 @@
-#ignore the following file types
-**/modelsim.ini
-**/vlog.opt
+
+#The following is at the top of the gitignore to ignore anything without an extension
+*
+!*/
+!*.*
+
 *.png
 *.bak
 *.o
-*.ghw
 *.cf
+
+**/modelsim.ini
+**/vlog.opt
 
 #ignore some generated files
 logic/vsim.wlf
