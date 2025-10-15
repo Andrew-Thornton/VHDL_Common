@@ -352,7 +352,7 @@ architecture test_bench of float_mult_simple_tb is
       assert (tb_c(31) = '0') and
             (tb_c(30 downto 23) = (exp_expect)) and
             (tb_c(22 downto  0) /= mand_expect) --ensure nan
-      report "test failed"
+      report "test failed, value was " & to_string(tb_c)
       severity failure;
       report "DUT Output         :NAN";
       report "test passed";
@@ -819,70 +819,70 @@ begin
     -- test case 25 -- NaN + inf
     run_nan_inf_test_case(clk => tb_clk, test_case_num => 25, a => tb_a , b => tb_b);
 
-    -- test case 28 -- +inf and numbers
+    -- test case 26 -- +inf and numbers
     run_inf_test_case_input_b(clk => tb_clk, test_case_num => 26, input_b => 0.0, a => tb_a , b => tb_b);
 
-    -- test case 29 -- +inf and numbers
+    -- test case 27 -- +inf and numbers
     run_inf_test_case_input_b(clk => tb_clk, test_case_num => 27, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 30 -- +inf and numbers
+    -- test case 28 -- +inf and numbers
     run_inf_test_case_input_b(clk => tb_clk, test_case_num => 28, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 31 -- +inf and numbers
+    -- test case 29 -- +inf and numbers
     run_inf_test_case_input_b(clk => tb_clk, test_case_num => 29, input_b => -4.0, a => tb_a , b => tb_b);
 
-    -- test case 32 -- +inf and numbers
+    -- test case 30 -- +inf and numbers
     run_inf_test_case_input_b(clk => tb_clk, test_case_num => 30, input_b => 4.0, a => tb_a , b => tb_b);
 
-    -- test case 33 -- +inf and numbers
+    -- test case 31 -- +inf and numbers
     run_inf_test_case_input_a(clk => tb_clk, test_case_num => 31, input_a => 0.0, a => tb_a , b => tb_b);
 
-    -- test case 34 -- +inf and numbers
+    -- test case 32 -- +inf and numbers
     run_inf_test_case_input_a(clk => tb_clk, test_case_num => 32, input_a =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 35 -- +inf and numbers
+    -- test case 33 -- +inf and numbers
     run_inf_test_case_input_a(clk => tb_clk, test_case_num => 33, input_a => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 36 -- +inf and numbers
+    -- test case 34 -- +inf and numbers
     run_inf_test_case_input_a(clk => tb_clk, test_case_num => 34, input_a => -4.0, a => tb_a , b => tb_b);
 
-    -- test case 37 -- +inf and numbers
+    -- test case 35 -- +inf and numbers
     run_inf_test_case_input_a(clk => tb_clk, test_case_num => 35, input_a => 4.0, a => tb_a , b => tb_b);
 
-    -- test case 38 -- +inf and numbers
+    -- test case 36 -- +inf and numbers
     run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 36, input_b => 0.0, a => tb_a , b => tb_b);
 
-    -- test case 39 -- +inf and numbers
+    -- test case 37 -- +inf and numbers
     run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 37, input_b =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 40 -- -inf and numbers
+    -- test case 38 -- -inf and numbers
     run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 38, input_b => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 41 -- -inf and numbers
+    -- test case 39 -- -inf and numbers
     run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 39, input_b => -4.0, a => tb_a , b => tb_b);
 
-    -- test case 42 -- -inf and numbers
+    -- test case 40 -- -inf and numbers
     run_ninf_test_case_input_b(clk => tb_clk, test_case_num => 40, input_b => 4.0, a => tb_a , b => tb_b);
 
-    -- test case 43 -- -inf and numbers
+    -- test case 41 -- -inf and numbers
     run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 41, input_a => 0.0, a => tb_a , b => tb_b);
 
-    -- test case 44 -- -inf and numbers
+    -- test case 42 -- -inf and numbers
     run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 42, input_a =>  340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 45 -- -inf and numbers
+    -- test case 43 -- -inf and numbers
     run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 43, input_a => -340282346640000000000000000000000000000.0, a => tb_a , b => tb_b);
 
-    -- test case 46 -- -inf and numbers
+    -- test case 44 -- -inf and numbers
     run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 44, input_a => -4.0, a => tb_a , b => tb_b);
 
-    -- test case 47 -- -inf and numbers
+    -- test case 45 -- -inf and numbers
     run_ninf_test_case_input_a(clk => tb_clk, test_case_num => 45, input_a => 4.0, a => tb_a , b => tb_b);
 
-    -- test case 48 -- +inf and +inf = +inf
+    -- test case 46 -- +inf and +inf = +inf
     run_inf_inf_test_case(clk => tb_clk, test_case_num => 46, a => tb_a , b => tb_b);
 
-    -- test case 49 -- -inf and -inf = +inf
+    -- test case 47 -- -inf and -inf = +inf
     run_ninf_ninf_test_case(clk => tb_clk, test_case_num => 47, a => tb_a , b => tb_b);
 
     -- -- test case 50 -- 3.4028234664 x 10^38 + 3.4028234664 x 10^38 = +inf

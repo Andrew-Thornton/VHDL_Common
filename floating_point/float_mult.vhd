@@ -46,8 +46,9 @@ architecture rtl of float_mult is
   signal b_exp_sr : unsigned( 7 downto 0) := (others => '0');
   signal a_mand   : unsigned(23 downto 0) := (others => '0'); -- 1 uint and 23 frac
   signal b_mand   : unsigned(23 downto 0) := (others => '0'); -- 1 uint and 23 frac
-  signal inf_det : std_logic := '0';
-  signal nan_det : std_logic := '0';
+  signal inf_det  : std_logic := '0';
+  signal nan_det  : std_logic := '0';
+  signal zero_det : std_logic := '0';
 
   -- 2nd and 3rd clock cycle multiplier signals
   signal res_mand1 : unsigned(47 downto 0) := (others => '0');
@@ -58,25 +59,26 @@ architecture rtl of float_mult is
   signal res_exp_norm_nbs : unsigned(9 downto 0) := to_unsigned(127,10);
 
   -- 2nd to 3rd clock cycle shift register signals
-  signal res_sign_z   : std_logic;
-  signal res_sign_zz  : std_logic;
-  signal inf_det_z    : std_logic;
-  signal inf_det_zz   : std_logic;
-  signal nan_det_z    : std_logic;
-  signal nan_det_zz   : std_logic;
+  signal res_sign_z   : std_logic := '0';
+  signal res_sign_zz  : std_logic := '0';
+  signal inf_det_z    : std_logic := '0';
+  signal inf_det_zz   : std_logic := '0';
+  signal nan_det_z    : std_logic := '0';
+  signal nan_det_zz   : std_logic := '0';
+  signal zero_det_z   : std_logic := '0';
+  signal zero_det_zz  : std_logic := '0';
 
   --4th clock cycle bitshifted signals
-  signal res_mand_bs        : std_logic_vector(23 downto 0);
-  signal exp_shifted_right  : unsigned( 9 downto 0);
-  signal mand_shifted_right : unsigned(47 downto 0); --2 int 46 frac
-  signal shift_left_req     : std_logic;
-  signal res_sign_zzz       : std_logic;
-  signal shift_left_amount  : unsigned(5 downto 0);
+  signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
+  signal mand_shifted_right : unsigned(47 downto 0) := (others => '0'); --2 int 46 frac
+  signal shift_left_req     : std_logic := '0';
+  signal res_sign_zzz       : std_logic := '0';
+  signal shift_left_amount  : unsigned(5 downto 0) := (others => '0');
 
   --5th clock cycle items
-  signal res_sign_zzzz     : std_logic;
-  signal exp_shifted_left  : unsigned( 9 downto 0);
-  signal mand_shifted_left : unsigned(47 downto 0); --2 int 46 frac
+  signal res_sign_zzzz     : std_logic := '0';
+  signal exp_shifted_left  : unsigned( 9 downto 0) := (others => '0');
+  signal mand_shifted_left : unsigned(47 downto 0) := (others => '0'); --2 int 46 frac
 
 begin
 
@@ -151,10 +153,12 @@ begin
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
     constant SUB_NORM_EXP   : std_logic_vector( 7 downto 0) := x"00";
     constant INF_MAND       : std_logic_vector(22 downto 0) := 23x"000000";
+    constant ZERO_MAND      : std_logic_vector(22 downto 0) := 23x"000000";
   begin
     if rising_edge(clk_i) then
       nan_det   <= '0';
       inf_det   <= '0';
+      zero_det  <= '0';
       if (std_logic_vector(a_exp) = INF_OR_NAN_EXP) then
         if (std_logic_vector(a_frac) = INF_MAND) then
           inf_det <= '1';
@@ -167,6 +171,11 @@ begin
           inf_det <= '1';
         else
           nan_det <= '1';
+        end if;
+      end if;
+      if (std_logic_vector(b_exp) = SUB_NORM_EXP) then
+        if (std_logic_vector(b_frac) = INF_MAND) then
+          zero_det <= '1';
         end if;
       end if;
     end if;
@@ -234,6 +243,8 @@ begin
       inf_det_zz   <= inf_det_z;
       nan_det_z    <= nan_det;
       nan_det_zz   <= nan_det_z;
+      zero_det_z   <= zero_det;
+      zero_det_zz  <= zero_det_z;
       if srst_i = '1' then
         res_sign_z   <= '0';
         res_sign_zz  <= '0';
@@ -241,6 +252,8 @@ begin
         inf_det_zz   <= '0';
         nan_det_z    <= '0';
         nan_det_zz   <= '0';
+        zero_det_z   <= '0';
+        zero_det_zz  <= '0';
       end if;
     end if;
   end process shift_register_procs;
@@ -269,6 +282,11 @@ begin
       elsif inf_det_zz = '1' then
           exp_shifted_right  <= unsigned(NAN_INF_EXP);
           mand_shifted_right <= unsigned(INF_MANT);
+          if zero_det_zz = '1' then
+            exp_shifted_right  <= unsigned(NAN_INF_EXP);
+            mand_shifted_right <= unsigned(NAN_MANT);
+            res_sign_zzz       <= '0';
+          end if;
       elsif res_mand(47) = '1' then
         -- bitgrowth occurred and we need to shift the exponent
         -- unless infinity was reached
