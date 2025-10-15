@@ -399,6 +399,7 @@ architecture test_bench of float_mult_simple_tb is
     wait until rising_edge(clk);
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
+    report "a_dummy is " & to_string(a_dummy);
     if a_dummy(30 downto 0) = "0000000000000000000000000000000" then
       report "Expected Value was :NAN";
       assert (tb_c(31) = '0') and
@@ -408,7 +409,7 @@ architecture test_bench of float_mult_simple_tb is
       severity failure;
       report "DUT Output         :NAN";
       report "test passed";
-    elsif a_dummy(0) = '0' then
+    elsif a_dummy(31) = '0' then
       report "Expected Value was :Inf";
       assert (tb_c(31) = '0') and
             (tb_c(30 downto 23) = (exp_expect)) and
@@ -460,7 +461,7 @@ architecture test_bench of float_mult_simple_tb is
       severity failure;
       report "DUT Output         :Inf";
       report "test passed";
-    elsif b_dummy(0) = '0' then
+    elsif b_dummy(31) = '0' then
       report "Expected Value was :nInf";
       assert (tb_c(31) = '1') and
             (tb_c(30 downto 23) = (exp_expect)) and
