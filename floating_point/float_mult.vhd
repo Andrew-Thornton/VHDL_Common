@@ -178,6 +178,11 @@ begin
           zero_det <= '1';
         end if;
       end if;
+      if (std_logic_vector(a_exp) = SUB_NORM_EXP) then
+        if (std_logic_vector(a_frac) = INF_MAND) then
+          zero_det <= '1';
+        end if;
+      end if;
     end if;
   end process;
 

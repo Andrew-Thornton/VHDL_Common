@@ -404,7 +404,7 @@ architecture test_bench of float_mult_simple_tb is
       assert (tb_c(31) = '0') and
             (tb_c(30 downto 23) = (exp_expect)) and
             (tb_c(22 downto  0) /= mand_expect) --ensure NAN
-      report "test failed"
+      report "test failed, value was " & to_string(tb_c)
       severity failure;
       report "DUT Output         :NAN";
       report "test passed";

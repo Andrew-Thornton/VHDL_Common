@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Sat Oct 11 03:52:30 2025
+[*] Wed Oct 15 11:58:03 2025
 [*]
 [dumpfile] "/home/andrew/code/VHDL_Common/floating_point/float_mult_simple_tb_wave.vcd"
-[dumpfile_mtime] "Sat Oct 11 03:43:25 2025"
-[dumpfile_size] 3865
+[dumpfile_mtime] "Wed Oct 15 11:57:17 2025"
+[dumpfile_size] 18278
 [savefile] "/home/andrew/code/VHDL_Common/floating_point/float_mult_simple_tb.gtkw"
-[timestart] 137248000
+[timestart] 1594500000
 [size] 1280 1348
-[pos] -641 -1
-*-19.800001 140490000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-23.400002 1627700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] float_mult_simple_tb.
 [sst_width] 209
 [signals_width] 222
@@ -65,6 +65,7 @@ float_mult_simple_tb.dut.b_exp_sr[7:0]
 @28
 float_mult_simple_tb.dut.inf_det
 float_mult_simple_tb.dut.nan_det
+float_mult_simple_tb.dut.zero_det
 @200
 -clock_cycle_2
 @28
@@ -80,6 +81,7 @@ float_mult_simple_tb.dut.res_mand1[47:0]
 @28
 float_mult_simple_tb.dut.nan_det_z
 float_mult_simple_tb.dut.inf_det_z
+float_mult_simple_tb.dut.zero_det_z
 @200
 -clock_cycle_3
 @28
@@ -94,6 +96,8 @@ float_mult_simple_tb.dut.res_mand[47:0]
 @28
 float_mult_simple_tb.dut.inf_det_zz
 float_mult_simple_tb.dut.nan_det_zz
+@29
+float_mult_simple_tb.dut.zero_det_zz
 @200
 -clock_cycle_4
 @28
@@ -125,13 +129,12 @@ float_mult_simple_tb.dut.exp_shifted_left[9:0]
 (7)float_mult_simple_tb.dut.exp_shifted_left[9:0]
 (8)float_mult_simple_tb.dut.exp_shifted_left[9:0]
 (9)float_mult_simple_tb.dut.exp_shifted_left[9:0]
-@1401208
+@1401200
 -group_end
 @24
 float_mult_simple_tb.dut.exp_shifted_left[9:0]
 @28
 float_mult_simple_tb.dut.mand_shifted_left[47:0]
-@29
 float_mult_simple_tb.dut.mand_shifted_left[47:0]
 @200
 -output
