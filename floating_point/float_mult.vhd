@@ -360,7 +360,7 @@ begin
     -- fifth clock cycle bitshifting the result to the right
   bitshift_left_process : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
-    constant INF_MANT       : std_logic_vector(22 downto 0) := 23x"000000";
+    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
   begin
     if rising_edge(clk_i) then
       if shift_left_req  = '1' then
