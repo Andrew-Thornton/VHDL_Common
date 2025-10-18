@@ -429,7 +429,11 @@ begin
       if nan_det_zzzz = '1' then
         exp_final  <= unsigned(NAN_INF_EXP);
         mant_final <= unsigned(NAN_MANT);
-        res_final          <= '0';
+        res_final  <= '0';
+      elsif zero_det_zzzz = '1' and inf_det_zzzz = '1' then
+        exp_final  <= unsigned(NAN_INF_EXP);
+        mant_final <= unsigned(NAN_MANT);
+        res_final  <= '0';
       elsif zero_det_zzzz = '1' then
         exp_final  <= unsigned(ZERO_EXP);
         mant_final <= unsigned(ZERO_MANT);

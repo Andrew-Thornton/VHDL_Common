@@ -598,7 +598,6 @@ architecture test_bench of float_mult_simple_tb is
     report "test passed";
   end procedure run_large_positive_to_inf_test_case1;
 
-
   procedure run_large_positive_to_inf_test_case2(
     signal clk             : in std_logic;
     constant test_case_num : in natural;
