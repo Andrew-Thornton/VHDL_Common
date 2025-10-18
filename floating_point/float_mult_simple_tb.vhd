@@ -592,65 +592,126 @@ architecture test_bench of float_mult_simple_tb is
     report "test passed";
   end procedure run_inf_inf_test_case;
 
-  -- procedure run_large_positive_to_inf_test_case(
-  --   signal clk             : in std_logic;
-  --   constant test_case_num : in natural;
-  --   signal a               : out std_logic_vector(31 downto 0);
-  --   signal b               : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --   -- adding two positive numbers which should overflow into infinity
-  --   wait for CLOCK_HOLD;
-  --   a   <= '0' & x"FE" & 23x"7FFFFF";
-  --   b   <= '0' & x"FE" & 23x"7FFFFF";
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :Inf";
-  --   assert (tb_c(31) = '0') and
-  --          (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :Inf";
-  --   report "test passed";
-  -- end procedure run_large_positive_to_inf_test_case;
+  procedure run_large_positive_to_inf_test_case1(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+    -- adding two positive numbers which should overflow into infinity
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FE" & 23x"7FFFFF";
+    b   <= '0' & x"FE" & 23x"7FFFFF";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_large_positive_to_inf_test_case1;
 
-  -- procedure run_large_negative_to_ninf_test_case(
-  --   signal clk             : in std_logic;
-  --   constant test_case_num : in natural;
-  --   signal a               : out std_logic_vector(31 downto 0);
-  --   signal b               : out std_logic_vector(31 downto 0)
-  -- ) is
-  --   constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
-  --   constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
-  -- begin
-  --   -- adding two positive numbers which should overflow into infinity
-  --   wait for CLOCK_HOLD;
-  --   a   <= '1' & x"FE" & 23x"7FFFFF";
-  --   b   <= '1' & x"FE" & 23x"7FFFFF";
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait until rising_edge(clk);
-  --   wait for CLOCK_HOLD;
-  --   report "Test case " & integer'image(test_case_num);
-  --   report "Expected Value was :-Inf";
-  --   assert (tb_c(31) = '1') and
-  --          (tb_c(30 downto 23) = (exp_expect)) and
-  --          (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
-  --   report "test failed"
-  --   severity failure;
-  --   report "DUT Output         :-Inf";
-  --   report "test passed";
-  -- end procedure run_large_negative_to_ninf_test_case;
+
+  procedure run_large_positive_to_inf_test_case2(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+    -- adding two positive numbers which should overflow into infinity
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FE" & 23x"7FFFFF";
+    b   <= '0' & x"FE" & 23x"7FFFFF";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :Inf";
+    assert (tb_c(31) = '0') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :Inf";
+    report "test passed";
+  end procedure run_large_positive_to_inf_test_case2;
+
+  procedure run_large_negative_to_ninf_test_case1(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+    -- adding two positive numbers which should overflow into infinity
+    wait for CLOCK_HOLD;
+    a   <= '1' & x"FE" & 23x"7FFFFF";
+    b   <= '0' & x"FE" & 23x"7FFFFF";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :-Inf";
+    assert (tb_c(31) = '1') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure negative infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :-Inf";
+    report "test passed";
+  end procedure run_large_negative_to_ninf_test_case1;
+
+  procedure run_large_negative_to_ninf_test_case2(
+    signal clk             : in std_logic;
+    constant test_case_num : in natural;
+    signal a               : out std_logic_vector(31 downto 0);
+    signal b               : out std_logic_vector(31 downto 0)
+  ) is
+    constant exp_expect : std_logic_vector(7 downto 0) := x"FF";
+    constant mand_expect : std_logic_vector(22 downto 0) := 23x"000000";
+  begin
+    -- adding two positive numbers which should overflow into infinity
+    wait for CLOCK_HOLD;
+    a   <= '0' & x"FE" & 23x"7FFFFF";
+    b   <= '1' & x"FE" & 23x"7FFFFF";
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait until rising_edge(clk);
+    wait for CLOCK_HOLD;
+    report "Test case " & integer'image(test_case_num);
+    report "Expected Value was :-Inf";
+    assert (tb_c(31) = '1') and
+           (tb_c(30 downto 23) = (exp_expect)) and
+           (tb_c(22 downto  0) = mand_expect) --ensure negative infinity
+    report "test failed"
+    severity failure;
+    report "DUT Output         :-Inf";
+    report "test passed";
+  end procedure run_large_negative_to_ninf_test_case2;
 
   -- procedure run_subnormal_test_case_1(
   --   signal clk             : in std_logic;
@@ -886,13 +947,19 @@ begin
     -- test case 47 -- -inf and -inf = +inf
     run_ninf_ninf_test_case(clk => tb_clk, test_case_num => 47, a => tb_a , b => tb_b);
 
-    -- -- test case 50 -- 3.4028234664 x 10^38 + 3.4028234664 x 10^38 = +inf
-    -- run_large_positive_to_inf_test_case(clk => tb_clk, test_case_num => 50, a => tb_a , b => tb_b);
+    -- test case 48 -- largest num x largest = inf
+    run_large_positive_to_inf_test_case1(clk => tb_clk, test_case_num => 48, a => tb_a , b => tb_b);
 
-    -- -- test case 51 -- -3.4028234664 x 10^38 + -3.4028234664 x 10^38 = -inf
-    -- run_large_negative_to_ninf_test_case(clk => tb_clk, test_case_num => 51, a => tb_a , b => tb_b);
+    -- test case 49 -- largest neg num x largest neg num = inf
+    run_large_positive_to_inf_test_case2(clk => tb_clk, test_case_num => 49, a => tb_a , b => tb_b);
 
-    -- -- test case 52 -- 1.4012984643 × 10^-45 + 1.4012984643 × 10^-45 = 2.8 x 10^-45
+    -- test case 50 -- largest pos x largest neg = -inf
+    run_large_negative_to_ninf_test_case1(clk => tb_clk, test_case_num => 50, a => tb_a , b => tb_b);
+
+    -- test case 51 -- largest neg x largest pos = -inf
+    run_large_negative_to_ninf_test_case2(clk => tb_clk, test_case_num => 51, a => tb_a , b => tb_b);
+
+    -- test case 52 -- 1.4012984643 × 10^-45 + 1.4012984643 × 10^-45 = 2.8 x 10^-45
     -- run_subnormal_test_case_1(clk => tb_clk, test_case_num => 52, a => tb_a , b => tb_b);
 
     -- -- test case 53 -- 1.1754942107 x 10^-38 + 1.1754942107 x 10^-38 = -- 2.3509887016 x 10^-38
