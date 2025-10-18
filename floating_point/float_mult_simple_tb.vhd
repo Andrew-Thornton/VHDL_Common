@@ -513,7 +513,7 @@ architecture test_bench of float_mult_simple_tb is
       severity failure;
       report "DUT Output         :NAN";
       report "test passed";
-    elsif a_dummy(0) = '0' then
+    elsif a_dummy(31) = '0' then
       report "Expected Value was :nInf";
       assert (tb_c(31) = '1') and
             (tb_c(30 downto 23) = (exp_expect)) and
