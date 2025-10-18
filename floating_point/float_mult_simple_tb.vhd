@@ -42,6 +42,8 @@ architecture test_bench of float_mult_simple_tb is
   constant CLOCK_PERIOD   : time := (1.0/CLOCK_FREQ_MHZ) * 1.0 us;
   constant CLOCK_HOLD     : time := CLOCK_PERIOD/10.0;
 
+  constant DUT_LATENCY_CC : natural := 6; 
+
   -- tb clock and reset
   signal tb_clk    : std_logic := '0';
   signal tb_srst   : std_logic := '1';
@@ -55,6 +57,7 @@ architecture test_bench of float_mult_simple_tb is
 
   --expected output
   signal tb_expect : real;
+  
 
   procedure run_basic_test_case(
     signal clk             : in std_logic;
@@ -66,23 +69,26 @@ architecture test_bench of float_mult_simple_tb is
   ) is
     variable proc_expect : real;
     variable proc_output : real;
+    variable proc_expect_slv : std_logic_vector(31 downto 0);
+    variable proc_output_slv : std_logic_vector(31 downto 0);
   begin
     wait for CLOCK_HOLD;
     a   <= real_to_slv(input_a);
     b   <= real_to_slv(input_b);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
+
     wait for CLOCK_HOLD;
     proc_expect := input_a * input_b;
     proc_output := slv_to_real(tb_c);
+    proc_expect_slv := real_to_slv(proc_expect);
+    proc_output_slv := real_to_slv(proc_output);
     wait for CLOCK_HOLD;
     if proc_expect = 0.0 then
       report "Test case " & integer'image(test_case_num);
-      report "Expected Value was :" & real'image(proc_expect);
-      report "DUT Output         :" & real'image(proc_output);
+      report "Expected Value was :" & real'image(proc_expect)&" : "&to_string(proc_expect_slv);
+      report "DUT Output         :" & real'image(proc_output)&" : "&to_string(tb_c);
       assert tb_c = real_to_slv(proc_expect) or (not(tb_c(31)) & tb_c(30 downto 0)) = real_to_slv(proc_expect) -- +/- 0.0
       report "test failed"
       severity failure;
@@ -111,17 +117,15 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"4ccccc";
     b   <= real_to_slv(input_b);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
     assert (tb_c(30 downto 23) = (exp_expect)) and
            (tb_c(22 downto  0) /= mand_not_expect) --ensure not infinity and NaN
-    report "test failed"
+    report "test failed, value was " & to_string(tb_c)
     severity failure;
     report "DUT Output         :NaN";
     report "test passed";
@@ -140,11 +144,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= real_to_slv(input_a);
     b   <= '0' & x"FF" & 23x"4ccccc";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
@@ -168,11 +170,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"4ccccc";
     b   <= '0' & x"FF" & 23x"4ccccc";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
@@ -196,11 +196,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '1' & x"FF" & 23x"000000";
     b   <= '0' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :-inf";
@@ -225,11 +223,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '1' & x"FF" & 23x"000000";
     b   <= '0' & x"FF" & 23x"4ccccc";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
@@ -253,11 +249,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"4ccccc";
     b   <= '1' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
@@ -281,11 +275,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"4ccccc";
     b   <= '0' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
@@ -309,11 +301,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"000000";
     b   <= '0' & x"FF" & 23x"4ccccc";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :NaN";
@@ -340,11 +330,9 @@ architecture test_bench of float_mult_simple_tb is
     a   <= '0' & x"FF" & 23x"000000";
     b   <= real_to_slv(input_b);
     b_dummy := real_to_slv(input_b);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     if b_dummy(30 downto 0) = "0000000000000000000000000000000" then
@@ -392,11 +380,9 @@ architecture test_bench of float_mult_simple_tb is
     a   <= real_to_slv(input_a);
     a_dummy := real_to_slv(input_a);
     b   <= '0' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "a_dummy is " & to_string(a_dummy);
@@ -445,11 +431,9 @@ architecture test_bench of float_mult_simple_tb is
     a       <= '1' & x"FF" & 23x"000000";
     b       <= real_to_slv(input_b);
     b_dummy := real_to_slv(input_b);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     if b_dummy(30 downto 0) = "0000000000000000000000000000000" then
@@ -497,11 +481,9 @@ architecture test_bench of float_mult_simple_tb is
     a       <= real_to_slv(input_a);
     a_dummy := real_to_slv(input_a);
     b       <= '1' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     if a_dummy(30 downto 0) = "0000000000000000000000000000000" then
@@ -546,11 +528,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '1' & x"FF" & 23x"000000";
     b   <= '1' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :Inf";
@@ -575,11 +555,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FF" & 23x"000000";
     b   <= '0' & x"FF" & 23x"000000";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :Inf";
@@ -605,18 +583,16 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FE" & 23x"7FFFFF";
     b   <= '0' & x"FE" & 23x"7FFFFF";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :Inf";
     assert (tb_c(31) = '0') and
            (tb_c(30 downto 23) = (exp_expect)) and
            (tb_c(22 downto  0) = mand_expect) --ensure positive infinity
-    report "test failed"
+    report "test failed, value was " & to_string(tb_c)
     severity failure;
     report "DUT Output         :Inf";
     report "test passed";
@@ -636,11 +612,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FE" & 23x"7FFFFF";
     b   <= '0' & x"FE" & 23x"7FFFFF";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :Inf";
@@ -666,11 +640,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '1' & x"FE" & 23x"7FFFFF";
     b   <= '0' & x"FE" & 23x"7FFFFF";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :-Inf";
@@ -696,11 +668,9 @@ architecture test_bench of float_mult_simple_tb is
     wait for CLOCK_HOLD;
     a   <= '0' & x"FE" & 23x"7FFFFF";
     b   <= '1' & x"FE" & 23x"7FFFFF";
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
-    wait until rising_edge(clk);
+    for i in 0 to DUT_LATENCY_CC loop
+      wait until rising_edge(clk);
+    end loop;
     wait for CLOCK_HOLD;
     report "Test case " & integer'image(test_case_num);
     report "Expected Value was :-Inf";
