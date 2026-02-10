@@ -1,9 +1,4 @@
 -------------------------------------------------------------------------------
--- Copyright (C) 2025 Andrew Thornton - All Rights Reserved
--- Please contact me via andrewthornton9619@gmail.com or via linkedin
--- https://www.linkedin.com/in/andrew-thornton-976a95231/
--- if you would like to use this code.
--------------------------------------------------------------------------------
 -- Author        : Andrew Thornton
 -- Creation Date : 2025-Oct-01
 -- Standard      : VHDL 2008
