@@ -81,16 +81,42 @@ architecture test_bench of float_mult_simple_tb2 is
   --expected output
   signal tb_expect : real;
 
-  type test_case_t is record
-    a : float32;
-    b : float32;
-  end record;
+--   type test_case_t is record
+--     a : float32;
+--     b : float32;
+--   end record;
 
-  type test_cases_t is array (natural range <>) of test_case_t;
+--   type test_cases_t is array (natural range <>) of test_case_t;
   
-constant TB_TEST_CASES : test_cases_t(0 to 143) :=
-  (others => (a => to_float(0.42), b => to_float(0.42)));
+-- constant TB_TEST_CASES : test_cases_t(0 to 143) :=
+--   (others => (a => to_float(0.42), b => to_float(0.42)));
 
+  type test_case_t is array(natural range<>) of float32;
+
+
+  constant TB_TEST_NUMBERS : test_case_t(0 to 19) := (
+    to_float(2.0),
+    to_float(1.0),
+    to_float(-2.0),
+    to_float(-1.0),
+    to_float(0.0),
+    to_float(-0.0),
+    to_float(0.5),
+    to_float(-0.5),
+    to_float(0.125),
+    to_float(-0.125),
+    to_float(TB_NAN_SLV),
+    to_float(TB_PINF_SLV),
+    to_float(TB_NINF_SLV),
+    to_float(TB_ZERO_SLV),
+    to_float(TB_SMALLEST_SUB_POS_SLV),
+    to_float(TB_SMALLEST_SUB_NEG_SLV),
+    to_float(TB_LARGEST_POS_SLV),
+    to_float(TB_LARGEST_NEG_SLV),
+    to_float(TB_LARGEST_SUB_POS_SLV),
+    to_float(TB_LARGEST_SUB_NEG_SLV)
+--    others => to_float(0.42)
+  );
 
 begin
 
