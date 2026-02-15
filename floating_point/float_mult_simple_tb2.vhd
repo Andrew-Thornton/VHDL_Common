@@ -147,11 +147,63 @@ begin
   -- this process checks all 4 possible combinations for the and gate
   -- and ensures the correct values are output.
   tb_main_proc : process
+
+    procedure run_test_case(
+      constant input_a       : in  float32;
+      constant input_b       : in  float32;
+      signal clk             : in  std_logic;
+      signal a               : out std_logic_vector(31 downto 0);
+      signal b               : out std_logic_vector(31 downto 0);
+      signal c               : in  std_logic_vector(31 downto 0)
+    ) is
+      variable proc_expect : real;
+      variable proc_output : real;
+      variable proc_expect_slv : std_logic_vector(31 downto 0);
+      variable proc_output_slv : std_logic_vector(31 downto 0);
+    begin
+      wait for CLOCK_HOLD;
+      a   <= to_slv(input_a);
+      b   <= to_slv(input_b);
+      for i in 0 to DUT_LATENCY_CC loop
+        wait until rising_edge(clk);
+      end loop;
+
+      -- wait for CLOCK_HOLD;
+      -- proc_expect := input_a * input_b;
+      -- proc_output := slv_to_real(tb_c);
+      -- proc_expect_slv := real_to_slv(proc_expect);
+      -- proc_output_slv := real_to_slv(proc_output);
+      -- wait for CLOCK_HOLD;
+      -- if proc_expect = 0.0 then
+      --   report "Test case " & integer'image(test_case_num);
+      --   report "Expected Value was :" & real'image(proc_expect)&" : "&to_string(proc_expect_slv);
+      --   report "DUT Output         :" & real'image(proc_output)&" : "&to_string(tb_c);
+      --   assert tb_c = real_to_slv(proc_expect) or (not(tb_c(31)) & tb_c(30 downto 0)) = real_to_slv(proc_expect) -- +/- 0.0
+      --   report "test failed"
+      --   severity failure;
+      --   report "test passed";
+      -- else
+      --   report "Test case " & integer'image(test_case_num);
+      --   report "Expected Value was :" & real'image(proc_expect);
+      --   report "DUT Output         :" & real'image(proc_output);
+      --   assert tb_c = real_to_slv(proc_expect)
+      --   report "test failed"
+      --   severity failure;
+      --   report "test passed";
+      -- end if;
+    end procedure run_test_case;
+
+
+
   begin
 
     wait until tb_srst = '0';
 
-
+    for i in TB_TEST_NUMBERS'range loop
+      for j in TB_TEST_NUMBERS'range loop
+        run_test_case(TB_TEST_NUMBERS(i),TB_TEST_NUMBERS(j), tb_clk, tb_a, tb_b, tb_c);
+      end loop;
+    end loop;
     wait;
 
   end process tb_main_proc;
