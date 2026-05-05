@@ -1,0 +1,26 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Tue May  5 13:38:36 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/wave.vcd"
+[dumpfile_mtime] "Tue May  5 13:34:50 2026"
+[dumpfile_size] 3570
+[savefile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/float_mult_tb.gtkw"
+[timestart] 0
+[size] 1920 988
+[pos] -461 -195
+*-25.000000 80000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 527
+[signals_width] 102
+[sst_expanded] 1
+[sst_vpaned_height] 290
+@28
+float_mult.clk_i
+@29
+float_mult.srst_i
+@22
+float_mult.a_i[31:0]
+float_mult.b_i[31:0]
+float_mult.c_o[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

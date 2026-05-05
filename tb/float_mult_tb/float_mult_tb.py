@@ -46,7 +46,7 @@ import itertools
 
 import cocotb
 from cocotb.clock    import Clock
-from cocotb.triggers import RisingEdge, ClockCycles
+from cocotb.triggers import RisingEdge, ClockCycles, Timer
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -54,6 +54,8 @@ from cocotb.triggers import RisingEdge, ClockCycles
 
 PIPELINE_DEPTH = 6      # DUT latency in clock cycles
 ULP_TOLERANCE  = 1      # Acceptable difference in raw bit patterns for normals
+CLOCK_PERIOD_NS = 10
+CLOCK_HOLD_NS = 1
 
 
 # ---------------------------------------------------------------------------
@@ -183,11 +185,12 @@ def expected_result(a_bits: int, b_bits: int):
 # Initialisation coroutine
 # ---------------------------------------------------------------------------
 
+
 async def initialise(dut):
     """Start clock, assert synchronous reset, flush pipeline."""
     dut._log.info("=== initialise: starting clock and reset ===")
 
-    cocotb.start_soon(Clock(dut.clk_i, 10, units="ns").start())
+    cocotb.start_soon(Clock(dut.clk_i, CLOCK_PERIOD_NS, unit="ns").start())
 
     dut.srst_i.value = 1
     dut.a_i.value    = 0
@@ -308,6 +311,8 @@ async def test_float_mult_cross_matrix(dut):
     # Phase 2 – let the last transaction propagate through the pipeline
     # ------------------------------------------------------------------
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH)
+    # await RisingEdge(dut.clk_i)
+    await Timer(CLOCK_HOLD_NS, units="ns")
 
     # ------------------------------------------------------------------
     # Phase 3 – replay stimulus order, reading output one cycle per pair
