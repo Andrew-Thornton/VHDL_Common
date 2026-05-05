@@ -27,3 +27,9 @@ logic/nor_gate_tb
 logic/or_gate_tb
 logic/xor_gate_tb
 
+__pycache__
+
+sim_build/
+
+venv/
+
