@@ -221,6 +221,9 @@ async def matrix_checker(dut):
     fail_count  = 0
     skip_count  = 0     # special-value results checked categorically
 
+    pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
+    n     = len(pairs)
+
     for idx, (a_bits, b_bits) in enumerate(pairs):
 
         result_bits = int(dut.c_o.value)
