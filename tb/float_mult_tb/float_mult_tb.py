@@ -216,7 +216,7 @@ async def matrix_inputter(dut):
 # Main test
 # ---------------------------------------------------------------------------
 
-async def matric_checker(dut):
+async def matrix_checker(dut):
     pass_count  = 0
     fail_count  = 0
     skip_count  = 0     # special-value results checked categorically
@@ -310,11 +310,10 @@ async def test_float_mult_cross_matrix(dut):
     # Phase 3 – replay stimulus order, reading output one cycle per pair
     # ------------------------------------------------------------------
 
-    cocotb.start_soon(matric_checker(dut))
+    checking_results_task = cocotb.start_soon(matrix_checker(dut))
 
-    await matric_checker
+    await checking_results_task
 
-    await ClockCycles
     # Drain pipeline before simulation ends
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH + 2)
 
