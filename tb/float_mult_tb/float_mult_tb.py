@@ -204,56 +204,19 @@ async def initialise(dut):
     dut._log.info("=== initialise: complete ===")
 
 
+
+async def matrix_inputter(dut):
+    pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
+    n     = len(pairs)
+    for a_bits, b_bits in pairs:
+        dut.a_i.value = a_bits
+        dut.b_i.value = b_bits
+        await RisingEdge(dut.clk_i)
 # ---------------------------------------------------------------------------
 # Main test
 # ---------------------------------------------------------------------------
 
-@cocotb.test()
-async def test_float_mult_cross_matrix(dut):
-    """
-    Apply every ordered (a, b) pair from STIMULUS_BITS to the DUT
-    back-to-back, then verify each output PIPELINE_DEPTH cycles after
-    its corresponding input was driven.
-    """
-    await initialise(dut)
-
-    # Build the full ordered cross-product list
-    pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
-    n     = len(pairs)
-
-    dut._log.info(
-        f"Cross-matrix: {len(STIMULUS_BITS)} values × {len(STIMULUS_BITS)} values "
-        f"= {n} test vectors"
-    )
-
-    # ------------------------------------------------------------------
-    # Phase 1 – drive all stimuli on consecutive rising edges
-    # ------------------------------------------------------------------
-    for a_bits, b_bits in pairs:
-        await RisingEdge(dut.clk_i)
-        dut.a_i.value = a_bits
-        dut.b_i.value = b_bits
-
-    # ------------------------------------------------------------------
-    # Phase 2 – let the last transaction propagate through the pipeline
-    # ------------------------------------------------------------------
-    await ClockCycles(dut.clk_i, PIPELINE_DEPTH)
-
-    # ------------------------------------------------------------------
-    # Phase 3 – replay stimulus order, reading output one cycle per pair
-    # ------------------------------------------------------------------
-    # The first result appears PIPELINE_DEPTH cycles after the first input,
-    # i.e. we are already positioned correctly after Phase 2.
-    # We step back one rising edge per result (they arrive every cycle).
-
-    # Re-drive inputs during checking (keeps pipeline busy but we only care
-    # about the output window that corresponds to our original stimulus).
-    # Easiest: just read on the cycle boundary each time.
-    #
-    # Because we drove N inputs on N consecutive edges, and then waited
-    # PIPELINE_DEPTH more edges, result[0] appeared exactly at the END of
-    # Phase 2.  We sample result[0] NOW, then clock once per remaining result.
-
+async def matric_checker(dut):
     pass_count  = 0
     fail_count  = 0
     skip_count  = 0     # special-value results checked categorically
@@ -314,6 +277,44 @@ async def test_float_mult_cross_matrix(dut):
         if idx < n - 1:
             await RisingEdge(dut.clk_i)
 
+
+@cocotb.test()
+async def test_float_mult_cross_matrix(dut):
+    """
+    Apply every ordered (a, b) pair from STIMULUS_BITS to the DUT
+    back-to-back, then verify each output PIPELINE_DEPTH cycles after
+    its corresponding input was driven.
+    """
+    await initialise(dut)
+
+    # Build the full ordered cross-product list
+    pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
+    n     = len(pairs)
+
+    dut._log.info(
+        f"Cross-matrix: {len(STIMULUS_BITS)} values × {len(STIMULUS_BITS)} values "
+        f"= {n} test vectors"
+    )
+
+    # ------------------------------------------------------------------
+    # Phase 1 – drive all stimuli on consecutive rising edges
+    # ------------------------------------------------------------------
+    cocotb.start_soon(matrix_inputter(dut))
+
+    # ------------------------------------------------------------------
+    # Phase 2 – let the last transaction propagate through the pipeline
+    # ------------------------------------------------------------------
+    await ClockCycles(dut.clk_i, PIPELINE_DEPTH)
+
+    # ------------------------------------------------------------------
+    # Phase 3 – replay stimulus order, reading output one cycle per pair
+    # ------------------------------------------------------------------
+
+    cocotb.start_soon(matric_checker(dut))
+
+    await matric_checker
+
+    await ClockCycles
     # Drain pipeline before simulation ends
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH + 2)
 
