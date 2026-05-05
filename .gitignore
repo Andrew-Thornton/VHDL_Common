@@ -1,6 +1,5 @@
 
 #The following is at the top of the gitignore to ignore anything without an extension
-*
 !*/
 !*.*
 
