@@ -185,7 +185,7 @@ def expected_result(a_bits: int, b_bits: int):
 
 async def initialise(dut):
     """Start clock, assert synchronous reset, flush pipeline."""
-    dut.log.info("=== initialise: starting clock and reset ===")
+    dut._log.info("=== initialise: starting clock and reset ===")
 
     cocotb.start_soon(Clock(dut.clk_i, 10, units="ns").start())
 
@@ -201,7 +201,7 @@ async def initialise(dut):
     dut.srst_i.value = 0
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH + 2)
 
-    dut.log.info("=== initialise: complete ===")
+    dut._log.info("=== initialise: complete ===")
 
 
 # ---------------------------------------------------------------------------
@@ -221,7 +221,7 @@ async def test_float_mult_cross_matrix(dut):
     pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
     n     = len(pairs)
 
-    dut.log.info(
+    dut._log.info(
         f"Cross-matrix: {len(STIMULUS_BITS)} values × {len(STIMULUS_BITS)} values "
         f"= {n} test vectors"
     )
@@ -272,21 +272,21 @@ async def test_float_mult_cross_matrix(dut):
         if cat == "NaN":
             ok = is_nan_bits(result_bits)
             verdict = "PASS" if ok else "FAIL"
-            dut.log.info(f"{label}expect NaN   got {category(result_bits)}  {verdict}")
+            dut._log.info(f"{label}expect NaN   got {category(result_bits)}  {verdict}")
             if ok: pass_count  += 1
             else:  fail_count  += 1; assert False, f"{label}expected NaN, got 0x{result_bits:08X}"
 
         elif cat == "Inf":
             ok = is_inf_bits(result_bits)
             verdict = "PASS" if ok else "FAIL"
-            dut.log.info(f"{label}expect Inf   got {category(result_bits)}  {verdict}")
+            dut._log.info(f"{label}expect Inf   got {category(result_bits)}  {verdict}")
             if ok: pass_count  += 1
             else:  fail_count  += 1; assert False, f"{label}expected Inf, got 0x{result_bits:08X}"
 
         elif cat == "Zero":
             ok = is_zero_bits(result_bits)
             verdict = "PASS" if ok else "FAIL"
-            dut.log.info(f"{label}expect Zero  got {category(result_bits)}  {verdict}")
+            dut._log.info(f"{label}expect Zero  got {category(result_bits)}  {verdict}")
             if ok: pass_count  += 1
             else:  fail_count  += 1; assert False, f"{label}expected Zero, got 0x{result_bits:08X}"
 
@@ -294,7 +294,7 @@ async def test_float_mult_cross_matrix(dut):
             diff = abs(result_bits - exp_bits)
             ok   = diff <= ULP_TOLERANCE
             verdict = "PASS" if ok else "FAIL"
-            dut.log.info(
+            dut._log.info(
                 f"{label}"
                 f"expect 0x{exp_bits:08X}({b2f(exp_bits):.6g})  "
                 f"got 0x{result_bits:08X}({b2f(result_bits):.6g})  "
@@ -317,7 +317,7 @@ async def test_float_mult_cross_matrix(dut):
     # Drain pipeline before simulation ends
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH + 2)
 
-    dut.log.info(
+    dut._log.info(
         f"=== Cross-matrix complete: {pass_count} PASS  "
         f"{fail_count} FAIL  {skip_count} SKIP  "
         f"(total {n}) ==="
