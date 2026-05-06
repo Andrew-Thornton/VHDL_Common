@@ -282,6 +282,7 @@ async def matrix_checker(dut):
         # Advance to the next output (unless this is the last one)
         if idx < n - 1:
             await RisingEdge(dut.clk_i)
+            await Timer(CLOCK_HOLD_NS, units="ns")
 
 
 @cocotb.test()
