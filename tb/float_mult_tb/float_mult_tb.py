@@ -43,6 +43,7 @@
 import math
 import struct
 import itertools
+import numpy as np
 
 import cocotb
 from cocotb.clock    import Clock
@@ -63,8 +64,7 @@ CLOCK_HOLD_NS = 1
 # ---------------------------------------------------------------------------
 
 def f2b(f: float) -> int:
-    """Python float → IEEE-754 single-precision bit pattern (uint32)."""
-    return struct.unpack(">I", struct.pack(">f", f))[0]
+    return np.frombuffer(np.float32(f).tobytes(), dtype=np.uint32)[0]
 
 
 def b2f(bits: int) -> float:
@@ -131,6 +131,22 @@ STIMULUS_BITS: list[int] = [
 ]
 
 
+
+def bits_to_f32(u32):
+    return np.frombuffer(np.uint32(u32).tobytes(), dtype=np.float32)[0]
+
+def f32_to_bits(f):
+    return np.frombuffer(np.float32(f).tobytes(), dtype=np.uint32)[0]
+
+def float32_mul_bits(a_bits, b_bits):
+    a = bits_to_f32(a_bits)
+    b = bits_to_f32(b_bits)
+
+    with np.errstate(over='ignore', invalid='ignore'):
+        r = np.float32(a * b)
+    #r = np.float32(a * b)   # stays in float32 → overflow → inf
+
+    return f32_to_bits(r)
 # ---------------------------------------------------------------------------
 # Expected-result helper
 # ---------------------------------------------------------------------------
@@ -169,7 +185,11 @@ def expected_result(a_bits: int, b_bits: int):
     # Normal / subnormal – use Python arithmetic
     a_f = b2f(a_bits)
     b_f = b2f(b_bits)
+    test = float32_mul_bits(a_bits, b_bits)
+
     r_f = a_f * b_f
+
+    print(f'test : {test}')
 
     if math.isinf(r_f):
         return "Inf", None
@@ -177,6 +197,11 @@ def expected_result(a_bits: int, b_bits: int):
         return "NaN", None
     if r_f == 0.0:
         return "Zero", None
+    
+
+
+    print(f'r_f : {r_f}')
+    print(f'')
 
     return "normal", f2b(r_f)
 
