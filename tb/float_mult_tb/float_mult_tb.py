@@ -41,7 +41,6 @@
 """
 
 import math
-import struct
 import itertools
 import numpy as np
 
@@ -64,12 +63,13 @@ CLOCK_HOLD_NS = 1
 # ---------------------------------------------------------------------------
 
 def f2b(f: float) -> int:
-    return np.frombuffer(np.float32(f).tobytes(), dtype=np.uint32)[0]
+    """Python float → IEEE-754 single-precision bit pattern (uint32)."""
+    return int(np.frombuffer(np.float32(f).tobytes(), dtype=np.uint32)[0])
 
 
 def b2f(bits: int) -> float:
     """IEEE-754 single-precision bit pattern (uint32) → Python float."""
-    return struct.unpack(">f", struct.pack(">I", int(bits) & 0xFFFF_FFFF))[0]
+    return float(np.frombuffer(np.uint32(bits).tobytes(), dtype=np.float32)[0])
 
 
 def is_nan_bits(b: int) -> bool:
@@ -97,8 +97,8 @@ def category(b: int) -> str:
 # ---------------------------------------------------------------------------
 
 # Smallest positive subnormal
-_SUBNORM_POS = struct.unpack(">I", struct.pack(">I", 0x0000_0001))[0]
-_SUBNORM_NEG = struct.unpack(">I", struct.pack(">I", 0x8000_0001))[0]
+_SUBNORM_POS = 0x0000_0001
+_SUBNORM_NEG = 0x8000_0001
 
 STIMULUS_BITS: list[int] = [
     # Normal positives
