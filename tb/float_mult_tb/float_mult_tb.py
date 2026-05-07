@@ -258,9 +258,13 @@ async def matrix_checker(dut):
         cat, exp_bits = expected_result(a_bits, b_bits)
 
         label = (
-            f"[{idx+1:>4}/{n}] "
-            f"a={category(a_bits):>14}  "
-            f"b={category(b_bits):>14}  →  "
+           f"[{idx+1:>4}/{n}] "
+           f"a={category(a_bits):>14}  "
+           f"a_hex=0x{a_bits:08x}  "
+           f"a_bin={a_bits:032b}  "
+           f"b={category(b_bits):>14}  "
+           f"b_hex=0x{b_bits:08x}  "
+           f"b_bin={b_bits:032b}  →  "
         )
 
         if cat == "NaN":
@@ -307,7 +311,7 @@ async def matrix_checker(dut):
         # Advance to the next output (unless this is the last one)
         if idx < n - 1:
             await RisingEdge(dut.clk_i)
-            await Timer(CLOCK_HOLD_NS, units="ns")
+            await Timer(CLOCK_HOLD_NS, unit="ns")
 
 
 @cocotb.test()
@@ -338,7 +342,7 @@ async def test_float_mult_cross_matrix(dut):
     # ------------------------------------------------------------------
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH)
     # await RisingEdge(dut.clk_i)
-    await Timer(CLOCK_HOLD_NS, units="ns")
+    await Timer(CLOCK_HOLD_NS, unit="ns")
 
     # ------------------------------------------------------------------
     # Phase 3 – replay stimulus order, reading output one cycle per pair

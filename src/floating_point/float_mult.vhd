@@ -44,6 +44,9 @@ architecture rtl of float_mult is
   signal inf_det  : std_logic := '0';
   signal nan_det  : std_logic := '0';
   signal zero_det : std_logic := '0';
+  --debug
+  signal debug_a_exp : integer;
+  signal debug_b_exp : integer;
 
   -- 2nd and 3rd clock cycle multiplier signals
   signal res_mant1 : unsigned(47 downto 0) := (others => '0');
@@ -51,7 +54,12 @@ architecture rtl of float_mult is
 
   -- 2nd and 3rd clock cycle exponent signals
   signal res_exp_nbs      : unsigned(8 downto 0) := to_unsigned(0,9);
+  signal maybe_shift_right_amount : unsigned(8 downto 0) := to_unsigned(0,9);
+  signal subnormal_shift_right : std_logic := '0';
   signal res_exp_norm_nbs : unsigned(9 downto 0) := to_unsigned(127,10);
+    --debug
+  signal debug_int_result_exp : integer;
+
 
   -- 2nd to 3rd clock cycle shift register signals
   signal res_sign_z   : std_logic := '0';
@@ -62,6 +70,7 @@ architecture rtl of float_mult is
   signal nan_det_zz   : std_logic := '0';
   signal zero_det_z   : std_logic := '0';
   signal zero_det_zz  : std_logic := '0';
+  signal shift_right_amount : unsigned(8 downto 0) := to_unsigned(0,9); -- TODO check bit width
 
   --4th clock cycle bitshifted signals
   signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
@@ -142,18 +151,22 @@ begin
   end process result_sign_process;
 
   -- This process just shift registers the exponents for now
-  -- this is first clock cycle
-  shift_register_proc : process(clk_i)
-  begin
-    if rising_edge(clk_i) then
-      a_exp_sr     <= a_exp;
-      b_exp_sr     <= b_exp;
-      if srst_i = '1' then
-        a_exp_sr <= to_unsigned(0,8);
-        b_exp_sr <= to_unsigned(0,8);
-      end if;
-    end if;
+  -- this is first clock cycle 
+
+  shift_register_proc : process(clk_i)                                      
+  begin                                                                
+    if rising_edge(clk_i) then                             
+      a_exp_sr     <= a_exp;                                           
+      b_exp_sr     <= b_exp;      
+      debug_a_exp      <= to_integer(a_exp) - 127;
+      debug_b_exp      <= to_integer(b_exp) - 127;                                                                                    
+      if srst_i = '1' then                                                      
+        a_exp_sr <= to_unsigned(0,8);                                              
+        b_exp_sr <= to_unsigned(0,8);                                               
+      end if;                                                           
+    end if;                                             
   end process shift_register_proc;
+  
 
   inf_and_nan_detection : process(clk_i)
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
@@ -227,17 +240,21 @@ begin
   exponent_res_pre_shift_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
-      res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr);
+      res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr); 
+      maybe_shift_right_amount <= to_unsigned(128,9) - res_exp_nbs;
       -- I expect this to need bitshifting for cases where we have entered sub normal
       -- need to add test
-      if res_exp_nbs > to_unsigned(127,9) then
-        res_exp_norm_nbs <= ('0' & res_exp_nbs) - to_unsigned(127,10);
+      -- if res_exp_nbs > to_unsigned(127,9) then
+      if res_exp_nbs(8)= '1' or res_exp_nbs(7) = '1' then
+        res_exp_norm_nbs       <= ('0' & res_exp_nbs) - to_unsigned(127,10);
+        subnormal_shift_right  <= '0';
       else
-        res_exp_norm_nbs <= to_unsigned(0,10);
+        res_exp_norm_nbs       <= to_unsigned(0,10);
+        subnormal_shift_right  <= '1';
       end if;
       if srst_i = '1' then
-        res_exp_nbs      <= to_unsigned(0,9);
         res_exp_norm_nbs <= to_unsigned(0,10);
+        subnormal_shift_right <= '0';
       end if;
     end if;
   end process exponent_res_pre_shift_process;
@@ -281,6 +298,43 @@ begin
     constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
   begin
     if rising_edge(clk_i) then
+
+      -- Here the mantissa is in the 2<X<3 range but we have detected a subnormal shift right
+      -- if it shifts right by 2 to be in the 0.X range, then the exp would be added by 2
+      -- if 
+      -- there are two options, one is that it stays subnormal
+      -- the other is that it returns to normal
+      -- if res_mant(47) = '1' and subnormal_shift_right = '1' then
+      --   -- 2.X 
+      --   if maybe_shift_right_amount > 2 then
+      --   shift_right_amount <= maybe_shift_right_amount + 1;
+      --   exp_add_amount     <= maybe_shift_right_amount + 1;
+      -- elsif res_mant(47) = '1' and  subnormal_shift_right = '0' then
+      --   shift_right_amount  <= 1;
+      --   exp_add_amount      <= 1;
+      -- elsif res_mant(47) = '0' and  subnormal_shift_right = '1' then
+      --   shift_right_amount <= maybe_shift_right_amount;
+      --   exp_add_amount     <= maybe_shift_right_amount;
+      -- else
+      --   shift_right_amount <= 0;
+      --   exp_add_amount     <= 0;
+      --   if res_exp_norm_nbs = ZERO_EXP and res_mant(46) = '1' then
+      --     exp_add_amount <= 1;
+      --   end if;
+      -- end if;     
+
+
+      -- res_exp_norm_nbs_z <= res_exp_norm_nbs;
+      -- exp_shifted_right  <= res_exp_norm_nbs_z + exp_add_amount;
+      -- mant_shifted_right <= shift_right(res_mant,shift_right_amount);
+
+      -- if exp_shifted_right > unsigned(MAX_EXP) then
+      --   exp_shifted_left  <= unsigned(NAN_INF_EXP);
+      --   mant_shifted_left <= unsigned(INF_MANT);
+      -- end if;
+
+
+
 
       shift_left_req  <= '0';
       if res_mant(47) = '1' then
