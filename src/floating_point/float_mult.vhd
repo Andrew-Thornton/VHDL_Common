@@ -74,7 +74,7 @@ architecture rtl of float_mult is
 
   --4th clock cycle bitshifted signals
   signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
-  signal mant_shifted_right : unsigned(47 downto 0) := (others => '0'); --2 int 46 frac
+  signal mant_shifted_right : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
   signal shift_left_req     : std_logic := '0';
   signal shift_left_amount  : unsigned(5 downto 0) := (others => '0');
   signal res_sign_zzz       : std_logic := '0';
@@ -152,7 +152,6 @@ begin
 
   -- This process just shift registers the exponents for now
   -- this is first clock cycle 
-
   shift_register_proc : process(clk_i)                                      
   begin                                                                
     if rising_edge(clk_i) then                             
@@ -252,6 +251,12 @@ begin
         res_exp_norm_nbs       <= to_unsigned(0,10);
         subnormal_shift_right  <= '1';
       end if;
+
+      is_max_exp <= '0';
+      if res_exp_nbs = to_unsigned(,9) then
+        is_max_exp <= '1';
+      end if;
+
       if srst_i = '1' then
         res_exp_norm_nbs <= to_unsigned(0,10);
         subnormal_shift_right <= '0';
@@ -289,7 +294,21 @@ begin
   -- The 4th clock cycle is re bitshifting in case of
   -- mantissa overflow or underflow
   -- note more to this here, andrew check soon, but need to make sure that we account for subnormal numbers
-  renorm_process : process(clk_i)
+  shift_right_proc : process(clk_i)
+    variable larger_mant_shit : std_logic_vector(55 downto 0);
+  begin
+    if rising_edge(clk_i) then
+      larger_mant_shit   := std_logic_vector(res_mant) & "00000000";--48 bits -> 56 bits
+      mant_shifted_right <= unsigned(larger_mant_shit);
+      res_is_subnormal   <= subnormal_shift_right;
+      is_max_exp_z       <= is_max_exp;
+      if subnormal_shift_right = '1' then
+        mant_shifted_right <= shift_right(unsigned(larger_mant_shit), to_integer(maybe_shift_right_amount));
+      end if;
+    end if;
+  end process;
+
+  shift_right_proc : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
     constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000800000";
     constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
@@ -298,72 +317,28 @@ begin
     constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
   begin
     if rising_edge(clk_i) then
-
-      -- Here the mantissa is in the 2<X<3 range but we have detected a subnormal shift right
-      -- if it shifts right by 2 to be in the 0.X range, then the exp would be added by 2
-      -- if 
-      -- there are two options, one is that it stays subnormal
-      -- the other is that it returns to normal
-      -- if res_mant(47) = '1' and subnormal_shift_right = '1' then
-      --   -- 2.X 
-      --   if maybe_shift_right_amount > 2 then
-      --   shift_right_amount <= maybe_shift_right_amount + 1;
-      --   exp_add_amount     <= maybe_shift_right_amount + 1;
-      -- elsif res_mant(47) = '1' and  subnormal_shift_right = '0' then
-      --   shift_right_amount  <= 1;
-      --   exp_add_amount      <= 1;
-      -- elsif res_mant(47) = '0' and  subnormal_shift_right = '1' then
-      --   shift_right_amount <= maybe_shift_right_amount;
-      --   exp_add_amount     <= maybe_shift_right_amount;
-      -- else
-      --   shift_right_amount <= 0;
-      --   exp_add_amount     <= 0;
-      --   if res_exp_norm_nbs = ZERO_EXP and res_mant(46) = '1' then
-      --     exp_add_amount <= 1;
-      --   end if;
-      -- end if;     
-
-
-      -- res_exp_norm_nbs_z <= res_exp_norm_nbs;
-      -- exp_shifted_right  <= res_exp_norm_nbs_z + exp_add_amount;
-      -- mant_shifted_right <= shift_right(res_mant,shift_right_amount);
-
-      -- if exp_shifted_right > unsigned(MAX_EXP) then
-      --   exp_shifted_left  <= unsigned(NAN_INF_EXP);
-      --   mant_shifted_left <= unsigned(INF_MANT);
-      -- end if;
-
-
-
-
-      shift_left_req  <= '0';
-      if res_mant(47) = '1' then
-        -- bitgrowth occurred and we need to shift the exponent
-        -- unless infinity was reached
+      shift_left_req     <= '0';
+      if res_mant(47) = '1' and is_max_exp_z = '1' then
+        exp_shifted_right  <= unsigned(NAN_INF_EXP);
+        mant_shifted_right <= unsigned(INF_MANT);   
+      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '0'then
         exp_shifted_right  <= res_exp_norm_nbs + 1;
         mant_shifted_right <= shift_right(res_mant,1);
-        if MAX_EXP >= std_logic_vector(res_exp_norm_nbs) then
-          exp_shifted_right  <= unsigned(NAN_INF_EXP);
-          mant_shifted_right <= unsigned(INF_MANT);
-        end if;
-      elsif res_exp_norm_nbs = ZERO_EXP then
-        -- is a subnormal number of 0
-        -- normally dont bit shift
+      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '1' then
+        exp_shifted_right  <= res_exp_norm_nbs + 2;
+        mant_shifted_right <= shift_right(res_mant,1);
+      elsif res_mant(46) = '1' and res_is_subnormal(46) = '0' then
+        exp_shifted_right  <= to_unsigned(1,10);
+        mant_shifted_right <= res_mant;
+      elsif res_mant(46) = '0' and res_is_subnormal(46) = '1' then
         exp_shifted_right  <= ZERO_EXP;
         mant_shifted_right <= res_mant;
-        -- if has breaked out into normal numbers adjust accordingly
-        if res_mant(46) = '1' then
-          exp_shifted_right  <= to_unsigned(1,10);
-          mant_shifted_right <= res_mant;
-        end if;
-      elsif res_mant(46) = '1' then --result is 1<=X<2
-        exp_shifted_right  <= res_exp_norm_nbs;
-        mant_shifted_right <= res_mant;
-      else --res_mant(46) = '0' normal num, bitshiting required
+      else --res_mant(47) = '0' and res_mant(46) = '0' then
         shift_left_req     <= '1';
         exp_shifted_right  <= res_exp_norm_nbs;
         mant_shifted_right <= res_mant;
       end if;
+
       if srst_i = '1' then
         shift_left_req     <= '0';
 
@@ -371,7 +346,7 @@ begin
         mant_shifted_right <= to_unsigned(0,48);
       end if;
     end if;
-  end process renorm_process;
+  end process;
 
   --just shift register for the fourth clock cycle
   shift_register_procs_cc4 : process(clk_i)
