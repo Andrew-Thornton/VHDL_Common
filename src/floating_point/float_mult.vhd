@@ -74,6 +74,7 @@ architecture rtl of float_mult is
   signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
   signal mant_shifted_right : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
   signal res_exp_norm_nbs_z : unsigned(9 downto 0) := to_unsigned(127,10);
+  signal is_max_exp_z       : std_logic := '0';
   signal res_is_subnormal   : std_logic := '0';
 
   signal res_sign_zzz       : std_logic := '0';
@@ -361,25 +362,25 @@ begin
         -- and will cause an overflow into +/- infinity
         exp_shifted_right_norm  <= unsigned(NAN_INF_EXP);
         mant_shifted_right_norm <= unsigned(INF_MANT);   
-      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '0' then
+      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal = '0' then
         -- the result is when the mantissa is between 2<=X<4
         -- and we shift right to divide by 2, and increase the exponent by 1
         exp_shifted_right_norm  <= res_exp_norm_nbs_z + 1;
         mant_shifted_right_norm <= shift_right(mant_shifted_right,1);
-      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '1' then
+      elsif res_mant(47) = '1' and res_is_subnormal = '1' then
         -- This result is when the result is between 2<X<4 and the exponent
         -- is currently subnormal, the mantissa is divided by two
         -- and the number is back in the normal range
         exp_shifted_right_norm  <= res_exp_norm_nbs_z + 1;
         mant_shifted_right_norm <= shift_right(mant_shifted_right,1);
-      elsif res_mant(46) = '1' and res_is_subnormal(46) = '0' then
+      elsif res_mant(46) = '1' and res_is_subnormal = '0' then
         -- This is when the number is 1<=X<2 but the exponent is signalling subnormal
         -- The exponent is increased (to 1)
         -- the mantissa is left how it is, because the two too bits will just be cropped
         -- off with the result, but 
         exp_shifted_right_norm  <= to_unsigned(1,10);
         mant_shifted_right_norm <= res_mant;
-      elsif res_mant(46) = '0' and res_is_subnormal(46) = '1' then
+      elsif res_mant(46) = '0' and res_is_subnormal = '1' then
         -- result stays subnormal, still has mantissa X<1
         exp_shifted_right_norm  <= ZERO_EXP;
         mant_shifted_right_norm <= mant_shifted_right;
