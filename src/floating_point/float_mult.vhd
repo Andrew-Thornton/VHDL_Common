@@ -60,7 +60,6 @@ architecture rtl of float_mult is
     --debug
   signal debug_int_result_exp : integer;
 
-
   -- 2nd to 3rd clock cycle shift register signals
   signal res_sign_z   : std_logic := '0';
   signal res_sign_zz  : std_logic := '0';
@@ -75,22 +74,32 @@ architecture rtl of float_mult is
   --4th clock cycle bitshifted signals
   signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
   signal mant_shifted_right : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
-  signal shift_left_req     : std_logic := '0';
-  signal shift_left_amount  : unsigned(5 downto 0) := (others => '0');
+  signal res_exp_norm_nbs_z : unsigned(9 downto 0) := to_unsigned(127,10);
+
   signal res_sign_zzz       : std_logic := '0';
   signal inf_det_zzz        : std_logic := '0';
   signal nan_det_zzz        : std_logic := '0';
   signal zero_det_zzz       : std_logic := '0';
 
   --5th clock cycle items
-  signal exp_shifted_left  : unsigned( 9 downto 0) := (others => '0');
-  signal mant_shifted_left : unsigned(47 downto 0) := (others => '0'); --2 int 46 frac
-  signal res_sign_zzzz     : std_logic := '0';
-  signal inf_det_zzzz      : std_logic := '0';
-  signal nan_det_zzzz      : std_logic := '0';
-  signal zero_det_zzzz     : std_logic := '0';
+  signal exp_shifted_right_norm  : unsigned(9 downto 0) := to_unsigned(0,10);
+  signal mant_shifted_right_norm : unsigned(55 downto 0) := to_unsigned(0,56);
+  signal shift_left_req          : std_logic := '0';
+  signal shift_left_amount       : unsigned(5 downto 0) := (others => '0');
+  signal res_sign_zzzz           : std_logic := '0';
+  signal inf_det_zzzz            : std_logic := '0';
+  signal nan_det_zzzz            : std_logic := '0';
+  signal zero_det_zzzz           : std_logic := '0';
 
   --6th clock cycle items
+  signal exp_shifted_left   : unsigned( 9 downto 0) := (others => '0');
+  signal mant_shifted_left  : unsigned(47 downto 0) := (others => '0'); --2 int 46 frac
+  signal res_sign_zzzzz     : std_logic := '0';
+  signal inf_det_zzzzz      : std_logic := '0';
+  signal nan_det_zzzzz      : std_logic := '0';
+  signal zero_det_zzzzz     : std_logic := '0';
+
+  --7th clock cycle items
   signal res_final         : std_logic := '0';
   signal exp_final         : unsigned( 7 downto 0) := (others => '0');
   signal mant_final        : unsigned(22 downto 0) := (others => '0');
@@ -104,7 +113,7 @@ begin
   b_exp  <= unsigned(b_i(30 downto 23));
   a_frac <= unsigned(a_i(22 downto  0));
   b_frac <= unsigned(b_i(22 downto  0));
-
+  ---------------------------------------------------------------------------
   -- clock cycle 1 items
   -- This process adds the missing MSB to the mantissa depending on whether the
   -- number is normal or zero or subnormal.
@@ -166,7 +175,8 @@ begin
     end if;                                             
   end process shift_register_proc;
   
-
+  -- This process just shift registers the exponents for now
+  -- this is first clock cycle 
   inf_and_nan_detection : process(clk_i)
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
     constant SUB_NORM_EXP   : std_logic_vector( 7 downto 0) := x"00";
@@ -204,6 +214,7 @@ begin
     end if;
   end process;
 
+  ---------------------------------------------------------------------------
   -- Clock cycles 2 and 3 items
 
   -- for a numbers in the format (1.a * 2^b) * (1.c * 2^d)
@@ -264,6 +275,7 @@ begin
     end if;
   end process exponent_res_pre_shift_process;
 
+  -- Clock cycles 2 and 3
   -- We have already calculated what the result sign will be
   -- so just delay this so it is in sync with the output
   -- at the end.
@@ -291,10 +303,11 @@ begin
     end if;
   end process shift_register_procs;
 
+  ---------------------------------------------------------------------------
+
   -- The 4th clock cycle is re bitshifting in case of
   -- mantissa overflow or underflow
-  -- note more to this here, andrew check soon, but need to make sure that we account for subnormal numbers
-  shift_right_proc : process(clk_i)
+  how_much_shift_subnormal_proc : process(clk_i)
     variable larger_mant_shit : std_logic_vector(55 downto 0);
   begin
     if rising_edge(clk_i) then
@@ -308,50 +321,11 @@ begin
     end if;
   end process;
 
-  shift_right_proc : process(clk_i)
-    constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
-    constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000800000";
-    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
-    constant ZERO_EXP        : unsigned( 9 downto 0) := to_unsigned(0, 10);
-    constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
-    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
-  begin
-    if rising_edge(clk_i) then
-      shift_left_req     <= '0';
-      if res_mant(47) = '1' and is_max_exp_z = '1' then
-        exp_shifted_right  <= unsigned(NAN_INF_EXP);
-        mant_shifted_right <= unsigned(INF_MANT);   
-      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '0'then
-        exp_shifted_right  <= res_exp_norm_nbs + 1;
-        mant_shifted_right <= shift_right(res_mant,1);
-      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '1' then
-        exp_shifted_right  <= res_exp_norm_nbs + 2;
-        mant_shifted_right <= shift_right(res_mant,1);
-      elsif res_mant(46) = '1' and res_is_subnormal(46) = '0' then
-        exp_shifted_right  <= to_unsigned(1,10);
-        mant_shifted_right <= res_mant;
-      elsif res_mant(46) = '0' and res_is_subnormal(46) = '1' then
-        exp_shifted_right  <= ZERO_EXP;
-        mant_shifted_right <= res_mant;
-      else --res_mant(47) = '0' and res_mant(46) = '0' then
-        shift_left_req     <= '1';
-        exp_shifted_right  <= res_exp_norm_nbs;
-        mant_shifted_right <= res_mant;
-      end if;
-
-      if srst_i = '1' then
-        shift_left_req     <= '0';
-
-        exp_shifted_right  <= to_unsigned(0,10);
-        mant_shifted_right <= to_unsigned(0,48);
-      end if;
-    end if;
-  end process;
-
   --just shift register for the fourth clock cycle
   shift_register_procs_cc4 : process(clk_i)
   begin
     if rising_edge(clk_i) then
+      res_exp_norm_nbs_z <= res_exp_norm_nbs;
       res_sign_zzz <= res_sign_zz;
       inf_det_zzz  <= inf_det_zz;
       nan_det_zzz  <= nan_det_zz;
@@ -365,61 +339,81 @@ begin
     end if;
   end process shift_register_procs_cc4;
 
+  ---------------------------------------------------------------------------
+
+  -- The 5th clock cycle is shifting the mantissa right if the result
+  -- and changing the power of 2 if the result is not in the 
+  -- range of 1<=X<2 for a normal number
+  -- or 0<=X<1 for a subnormal number
+  shift_right_proc : process(clk_i)
+    constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
+    constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000800000";
+    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
+    constant ZERO_EXP        : unsigned( 9 downto 0) := to_unsigned(0, 10);
+    constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
+    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
+  begin
+    if rising_edge(clk_i) then
+      shift_left_req     <= '0';
+      if res_mant(47) = '1' and is_max_exp_z = '1' then
+        -- this case the result is already at the maximum exponent
+        -- and will cause an overflow into +/- infinity
+        exp_shifted_right_norm  <= unsigned(NAN_INF_EXP);
+        mant_shifted_right_norm <= unsigned(INF_MANT);   
+      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '0' then
+        -- the result is when the mantissa is between 2<=X<4
+        -- and we shift right to divide by 2, and increase the exponent by 1
+        exp_shifted_right_norm  <= res_exp_norm_nbs_z + 1;
+        mant_shifted_right_norm <= shift_right(mant_shifted_right,1);
+      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal(46) = '1' then
+        -- This result is when the result is between 2<X<4 and the exponent
+        -- is currently subnormal, the mantissa is divided by two
+        -- and the number is back in the normal range
+        exp_shifted_right_norm  <= res_exp_norm_nbs_z + 1;
+        mant_shifted_right_norm <= shift_right(mant_shifted_right,1);
+      elsif res_mant(46) = '1' and res_is_subnormal(46) = '0' then
+        -- This is when the number is 1<=X<2 but the exponent is signalling subnormal
+        -- The exponent is increased (to 1)
+        -- the mantissa is left how it is, because the two too bits will just be cropped
+        -- off with the result, but 
+        exp_shifted_right_norm  <= to_unsigned(1,10);
+        mant_shifted_right_norm <= res_mant;
+      elsif res_mant(46) = '0' and res_is_subnormal(46) = '1' then
+        -- result stays subnormal, still has mantissa X<1
+        exp_shifted_right_norm  <= ZERO_EXP;
+        mant_shifted_right_norm <= mant_shifted_right;
+      else --res_mant(47) = '0' and res_mant(46) = '0' and res_is_subnormal = '0' then
+        -- This is the case when the X<1 but the exponent is in normal range
+        -- we need to multiply by 2,4,8 so that the mantissa is back 
+        -- within normal ranges
+        shift_left_req          <= '1';
+        exp_shifted_right_norm  <= res_exp_norm_nbs_z;
+        mant_shifted_right_norm <= mant_shifted_right;
+      end if;
+
+      if srst_i = '1' then
+        shift_left_req     <= '0';
+        exp_shifted_right_norm  <= to_unsigned(0,10);
+        mant_shifted_right_norm <= to_unsigned(0,48);
+      end if;
+    end if;
+  end process;
+
+  -- Fifth Clock Cycle
   -- This process looks at the mantissa, and then determines the position of
   -- the leftmost bit, this is then used in the shift right process
-  -- This is in the fourth clock cycle
   -- no reset required for this signal as shift_left_req  is reset to '0'
   find_left_most_bit_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
       shift_left_amount  <= to_unsigned(0,6);
       for i in 1 to 46 loop
-        if res_mant(i) = '1' then
-          shift_left_amount  <= to_unsigned(47,6) - to_unsigned(i,6);
+        if mant_shifted_right(i) = '1' then
+          shift_left_amount  <= to_unsigned(55,6) - to_unsigned(i,6);
         end if;
       end loop;
     end if;
   end process find_left_most_bit_process;
-
-    -- fifth clock cycle bitshifting the result to the right
-  bitshift_left_process : process(clk_i)
-    constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
-    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
-  begin
-    if rising_edge(clk_i) then
-      if shift_left_req  = '1' then
-        if to_integer(shift_left_amount) = 0 then
-          exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left <= to_unsigned(0,48);
-        elsif (to_integer(exp_shifted_right) > shift_left_amount ) then
-          -- moved into a normal number still
-          exp_shifted_left  <= exp_shifted_right - shift_left_amount ;
-          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(shift_left_amount));
-        elsif (to_integer(exp_shifted_right) = shift_left_amount ) then
-          -- we have moved into a subnormal number and need to bitshift
-          -- one less
-          exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(shift_left_amount) - 1);
-        else
-          -- maximum bit shift we can do, but has entered subnormal range
-          -- one less as has entered subnormla
-          exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(exp_shifted_right)-1);
-        end if;
-      else -- shift_left_req  = '0' then
-        exp_shifted_left  <= exp_shifted_right;
-        mant_shifted_left <= mant_shifted_right;
-        if exp_shifted_right>to_unsigned(254,10) then
-          exp_shifted_left  <= unsigned(NAN_INF_EXP); 
-          mant_shifted_left <= unsigned(INF_MANT);
-        end if;
-      end if;
-      if srst_i = '1' then
-        exp_shifted_left  <= to_unsigned(0,10);
-        mant_shifted_left <= to_unsigned(0,48);
-      end if;
-    end if;
-  end process bitshift_left_process;
 
   --just shift register for the fifth clock cycle
   shift_register_procs_cc5 : process(clk_i)
@@ -438,7 +432,66 @@ begin
     end if;
   end process shift_register_procs_cc5;
 
-  -- 6th clock cycle checks to make sure the nans and infs have been detected accordingly
+  ---------------------------------------------------------------------------
+
+  -- Sixth clock cycle bitshifting the result to the right
+  bitshift_left_process : process(clk_i)
+    constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
+    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
+  begin
+    if rising_edge(clk_i) then
+      if shift_left_req  = '1' then
+        if to_integer(shift_left_amount) = 0 then
+          exp_shifted_left  <= to_unsigned(0,10); --ERROR STATE should never occur, remove after sim
+          mant_shifted_left <= to_unsigned(0,48); --ERROR STATE should never occur, remove after sim
+        elsif (to_integer(exp_shifted_right_norm) > shift_left_amount ) then
+          -- moved into a normal number still
+          exp_shifted_left  <= exp_shifted_right_norm - shift_left_amount ;
+          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(shift_left_amount));
+        elsif (to_integer(exp_shifted_right_norm) = shift_left_amount ) then
+          -- we have moved into a subnormal number and need to bitshift
+          -- one less
+          exp_shifted_left  <= to_unsigned(0,10);
+          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(shift_left_amount) - 1);
+        else
+          -- maximum bit shift we can do, but has entered subnormal range
+          -- one less as has entered subnormla
+          exp_shifted_left  <= to_unsigned(0,10);
+          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(exp_shifted_right_norm)-1);
+        end if;
+      else -- shift_left_req  = '0' then
+        exp_shifted_left  <= exp_shifted_right_norm;
+        mant_shifted_left <= mant_shifted_right;
+        if exp_shifted_right_norm>to_unsigned(254,10) then
+          exp_shifted_left  <= unsigned(NAN_INF_EXP); 
+          mant_shifted_left <= unsigned(INF_MANT);
+        end if;
+      end if;
+      if srst_i = '1' then
+        exp_shifted_left  <= to_unsigned(0,10);
+        mant_shifted_left <= to_unsigned(0,48);
+      end if;
+    end if;
+  end process bitshift_left_process;
+
+  --just shift register for the fifth clock cycle
+  shift_register_procs_cc6 : process(clk_i)
+  begin
+    if rising_edge(clk_i) then
+      res_sign_zzzzz  <= res_sign_zzzz;
+      inf_det_zzzzz   <= inf_det_zzzz;
+      nan_det_zzzzz   <= nan_det_zzzz;
+      zero_det_zzzzz  <= zero_det_zzzz;
+      if srst_i = '1' then
+        res_sign_zzzzz <= '0';
+        inf_det_zzzzz  <= '0';
+        nan_det_zzzzz  <= '0';
+        zero_det_zzzzz <= '0';
+      end if;
+    end if;
+  end process shift_register_procs_cc6;
+
+  -- 7th clock cycle checks to make sure the nans and infs have been detected accordingly
   process_final_checks : process(clk_i)
     constant ZERO_EXP        : std_logic_vector( 7 downto 0) := x"00";
     constant ZERO_MANT       : std_logic_vector(22 downto 0) := "000" & x"00000";
