@@ -53,12 +53,11 @@ architecture rtl of float_mult is
   signal res_mant  : unsigned(47 downto 0) := (others => '0');
 
   -- 2nd and 3rd clock cycle exponent signals
-  signal res_exp_nbs      : unsigned(8 downto 0) := to_unsigned(0,9);
+  signal res_exp_nbs              : unsigned(8 downto 0) := to_unsigned(0,9);
   signal maybe_shift_right_amount : unsigned(8 downto 0) := to_unsigned(0,9);
-  signal subnormal_shift_right : std_logic := '0';
-  signal res_exp_norm_nbs : unsigned(9 downto 0) := to_unsigned(127,10);
-    --debug
-  signal debug_int_result_exp : integer;
+  signal subnormal_shift_right    : std_logic := '0';
+  signal res_exp_norm_nbs         : unsigned(9 downto 0) := to_unsigned(127,10);
+  signal is_max_exp               : std_logic := '0';
 
   -- 2nd to 3rd clock cycle shift register signals
   signal res_sign_z   : std_logic := '0';
@@ -75,6 +74,7 @@ architecture rtl of float_mult is
   signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
   signal mant_shifted_right : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
   signal res_exp_norm_nbs_z : unsigned(9 downto 0) := to_unsigned(127,10);
+  signal res_is_subnormal   : std_logic := '0';
 
   signal res_sign_zzz       : std_logic := '0';
   signal inf_det_zzz        : std_logic := '0';
@@ -248,6 +248,7 @@ begin
   -- so we need to add 127 to the number
   -- This is the exponent calculation stage
   exponent_res_pre_shift_process : process(clk_i)
+    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
   begin
     if rising_edge(clk_i) then
       res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr); 
@@ -264,7 +265,7 @@ begin
       end if;
 
       is_max_exp <= '0';
-      if res_exp_nbs = to_unsigned(,9) then
+      if res_exp_nbs = unsigned(MAX_EXP) then
         is_max_exp <= '1';
       end if;
 
