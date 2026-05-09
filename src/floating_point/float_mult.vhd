@@ -349,8 +349,8 @@ begin
   -- or 0<=X<1 for a subnormal number
   shift_right_proc : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
-    constant NAN_MANT        : std_logic_vector(47 downto 0 ):= x"000000800000";
-    constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
+    constant NAN_MANT        : std_logic_vector(55 downto 0 ):= x"00000080000000";
+    constant INF_MANT        : std_logic_vector(55 downto 0 ):= x"00000000000000";
     constant ZERO_EXP        : unsigned( 9 downto 0) := to_unsigned(0, 10);
     constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
     constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
@@ -379,7 +379,7 @@ begin
         -- the mantissa is left how it is, because the two too bits will just be cropped
         -- off with the result, but 
         exp_shifted_right_norm  <= to_unsigned(1,10);
-        mant_shifted_right_norm <= res_mant;
+        mant_shifted_right_norm <= mant_shifted_right;
       elsif res_mant(46) = '0' and res_is_subnormal = '1' then
         -- result stays subnormal, still has mantissa X<1
         exp_shifted_right_norm  <= ZERO_EXP;
@@ -396,7 +396,7 @@ begin
       if srst_i = '1' then
         shift_left_req     <= '0';
         exp_shifted_right_norm  <= to_unsigned(0,10);
-        mant_shifted_right_norm <= to_unsigned(0,48);
+        mant_shifted_right_norm <= to_unsigned(0,56);
       end if;
     end if;
   end process;
@@ -440,35 +440,37 @@ begin
   bitshift_left_process : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
     constant INF_MANT        : std_logic_vector(47 downto 0 ):= x"000000000000";
+    variable mant_shifted_left_fs : unsigned(55 downto 0);
   begin
     if rising_edge(clk_i) then
       if shift_left_req  = '1' then
         if to_integer(shift_left_amount) = 0 then
           exp_shifted_left  <= to_unsigned(0,10); --ERROR STATE should never occur, remove after sim
-          mant_shifted_left <= to_unsigned(0,48); --ERROR STATE should never occur, remove after sim
+          mant_shifted_left_fs := to_unsigned(0,56); --ERROR STATE should never occur, remove after sim
         elsif (to_integer(exp_shifted_right_norm) > shift_left_amount ) then
           -- moved into a normal number still
           exp_shifted_left  <= exp_shifted_right_norm - shift_left_amount ;
-          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(shift_left_amount));
+          mant_shifted_left_fs := shift_left(mant_shifted_right, to_integer(shift_left_amount));
         elsif (to_integer(exp_shifted_right_norm) = shift_left_amount ) then
           -- we have moved into a subnormal number and need to bitshift
           -- one less
           exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(shift_left_amount) - 1);
+          mant_shifted_left_fs := shift_left(mant_shifted_right, to_integer(shift_left_amount) - 1);
         else
           -- maximum bit shift we can do, but has entered subnormal range
           -- one less as has entered subnormla
           exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left <= shift_left(mant_shifted_right, to_integer(exp_shifted_right_norm)-1);
+          mant_shifted_left_fs := shift_left(mant_shifted_right, to_integer(exp_shifted_right_norm)-1);
         end if;
       else -- shift_left_req  = '0' then
-        exp_shifted_left  <= exp_shifted_right_norm;
-        mant_shifted_left <= mant_shifted_right;
+        exp_shifted_left     <= exp_shifted_right_norm;
+        mant_shifted_left_fs := mant_shifted_right;
         if exp_shifted_right_norm>to_unsigned(254,10) then
           exp_shifted_left  <= unsigned(NAN_INF_EXP); 
           mant_shifted_left <= unsigned(INF_MANT);
         end if;
       end if;
+      mant_shifted_left <= mant_shifted_left_fs(55 downto 8);
       if srst_i = '1' then
         exp_shifted_left  <= to_unsigned(0,10);
         mant_shifted_left <= to_unsigned(0,48);
