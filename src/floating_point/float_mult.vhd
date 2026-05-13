@@ -518,7 +518,7 @@ begin
     constant INF_MANT        : std_logic_vector(22 downto 0 ):= "000" & x"00000";
   begin
     if rising_edge(clk_i) then
-      res_final <= res_sign_zzzz;
+      res_final <= res_sign_zzzzz;
       exp_final <= exp_shifted_left(7 downto 0);
       mant_final <= mant_shifted_left(45 downto 23);
       if nan_det_zzzz = '1' then
