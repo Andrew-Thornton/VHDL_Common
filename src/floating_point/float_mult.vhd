@@ -91,6 +91,7 @@ architecture rtl of float_mult is
   signal inf_det_zzzz            : std_logic := '0';
   signal nan_det_zzzz            : std_logic := '0';
   signal zero_det_zzzz           : std_logic := '0';
+  signal dbg_shift_right_option  : integer   := 0;
 
   --6th clock cycle items
   signal exp_shifted_left   : unsigned( 9 downto 0) := (others => '0');
@@ -357,46 +358,59 @@ begin
   begin
     if rising_edge(clk_i) then
       shift_left_req     <= '0';
-      if res_mant(47) = '1' and is_max_exp_z = '1' then
+      dbg_shift_right_option <= 0;
+      if mant_shifted_right(55) = '1' and is_max_exp_z = '1' then
         -- this case the result is already at the maximum exponent
         -- and will cause an overflow into +/- infinity
         exp_shifted_right_norm  <= unsigned(NAN_INF_EXP);
         mant_shifted_right_norm <= unsigned(INF_MANT);   
-      elsif res_mant(47) = '1' and is_max_exp_z = '0' and res_is_subnormal = '0' then
+        dbg_shift_right_option  <= 1;
+      elsif mant_shifted_right(55) = '1' and is_max_exp_z = '0' and res_is_subnormal = '0' then
         -- the result is when the mantissa is between 2<=X<4
         -- and we shift right to divide by 2, and increase the exponent by 1
         exp_shifted_right_norm  <= res_exp_norm_nbs_z + 1;
         mant_shifted_right_norm <= shift_right(mant_shifted_right,1);
-      elsif res_mant(47) = '1' and res_is_subnormal = '1' then
+        dbg_shift_right_option <= 2;
+      elsif mant_shifted_right(55) = '1' and res_is_subnormal = '1' then
         -- This result is when the result is between 2<X<4 and the exponent
         -- is currently subnormal, the mantissa is divided by two
         -- and the number is back in the normal range
         exp_shifted_right_norm  <= res_exp_norm_nbs_z + 1;
         mant_shifted_right_norm <= shift_right(mant_shifted_right,1);
-      elsif res_mant(46) = '1' and res_is_subnormal = '0' then
+        dbg_shift_right_option <= 3;
+      elsif mant_shifted_right(54) = '1' and res_is_subnormal = '1' then
         -- This is when the number is 1<=X<2 but the exponent is signalling subnormal
         -- The exponent is increased (to 1)
         -- the mantissa is left how it is, because the two too bits will just be cropped
         -- off with the result, but 
         exp_shifted_right_norm  <= to_unsigned(1,10);
         mant_shifted_right_norm <= mant_shifted_right;
-      elsif res_mant(46) = '0' and res_is_subnormal = '1' then
+        dbg_shift_right_option <= 4;
+      elsif mant_shifted_right(54) = '0' and res_is_subnormal = '1' then
         -- result stays subnormal, still has mantissa X<1
         exp_shifted_right_norm  <= ZERO_EXP;
         mant_shifted_right_norm <= mant_shifted_right;
-      else --res_mant(47) = '0' and res_mant(46) = '0' and res_is_subnormal = '0' then
+        dbg_shift_right_option <= 5;
+      elsif mant_shifted_right(54) = '1' and res_is_subnormal = '0' then 
+        shift_left_req          <= '0';
+        exp_shifted_right_norm  <= res_exp_norm_nbs_z;
+        mant_shifted_right_norm <= mant_shifted_right;
+        dbg_shift_right_option <= 6;
+      else --mant_shifted_right(55) = '0' and res_mant(54) = '0' and res_is_subnormal = '0' then
         -- This is the case when the X<1 but the exponent is in normal range
         -- we need to multiply by 2,4,8 so that the mantissa is back 
         -- within normal ranges
         shift_left_req          <= '1';
         exp_shifted_right_norm  <= res_exp_norm_nbs_z;
         mant_shifted_right_norm <= mant_shifted_right;
+        dbg_shift_right_option <= 7;
       end if;
 
       if srst_i = '1' then
         shift_left_req     <= '0';
         exp_shifted_right_norm  <= to_unsigned(0,10);
         mant_shifted_right_norm <= to_unsigned(0,56);
+        dbg_shift_right_option <= 8;
       end if;
     end if;
   end process;

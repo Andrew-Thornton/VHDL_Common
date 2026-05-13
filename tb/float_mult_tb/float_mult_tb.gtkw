@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Wed May 13 12:58:12 2026
+[*] Wed May 13 13:14:43 2026
 [*]
 [dumpfile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/wave.vcd"
-[dumpfile_mtime] "Wed May 13 12:49:50 2026"
-[dumpfile_size] 1272
+[dumpfile_mtime] "Wed May 13 13:14:09 2026"
+[dumpfile_size] 1265
 [savefile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/float_mult_tb.gtkw"
 [timestart] 137480000
 [size] 1920 988
@@ -87,7 +87,18 @@ float_mult.is_max_exp_z
 float_mult.res_exp_norm_nbs_z[9:0]
 @24
 float_mult.res_exp_norm_nbs_z[9:0]
-@201
+@200
 -fifth clock cycle
+@24
+float_mult.exp_shifted_right_norm[9:0]
+@22
+float_mult.exp_shifted_right_norm[9:0]
+@40000024
+[fpshift_count] 54
+float_mult.mant_shifted_right_norm[55:0]
+@24
+float_mult.dbg_shift_right_option
+@29
+float_mult.shift_left_req
 [pattern_trace] 1
 [pattern_trace] 0
