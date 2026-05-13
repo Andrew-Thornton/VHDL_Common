@@ -464,21 +464,21 @@ begin
         elsif (to_integer(exp_shifted_right_norm) > shift_left_amount ) then
           -- moved into a normal number still
           exp_shifted_left  <= exp_shifted_right_norm - shift_left_amount ;
-          mant_shifted_left_fs := shift_left(mant_shifted_right, to_integer(shift_left_amount));
+          mant_shifted_left_fs := shift_left(mant_shifted_right_norm, to_integer(shift_left_amount));
         elsif (to_integer(exp_shifted_right_norm) = shift_left_amount ) then
           -- we have moved into a subnormal number and need to bitshift
           -- one less
           exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left_fs := shift_left(mant_shifted_right, to_integer(shift_left_amount) - 1);
+          mant_shifted_left_fs := shift_left(mant_shifted_right_norm, to_integer(shift_left_amount) - 1);
         else
           -- maximum bit shift we can do, but has entered subnormal range
           -- one less as has entered subnormla
           exp_shifted_left  <= to_unsigned(0,10);
-          mant_shifted_left_fs := shift_left(mant_shifted_right, to_integer(exp_shifted_right_norm)-1);
+          mant_shifted_left_fs := shift_left(mant_shifted_right_norm, to_integer(exp_shifted_right_norm)-1);
         end if;
       else -- shift_left_req  = '0' then
         exp_shifted_left     <= exp_shifted_right_norm;
-        mant_shifted_left_fs := mant_shifted_right;
+        mant_shifted_left_fs := mant_shifted_right_norm;
         if exp_shifted_right_norm>to_unsigned(254,10) then
           exp_shifted_left  <= unsigned(NAN_INF_EXP); 
           mant_shifted_left <= unsigned(INF_MANT);
