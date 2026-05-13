@@ -52,7 +52,7 @@ from cocotb.triggers import RisingEdge, ClockCycles, Timer
 # Constants
 # ---------------------------------------------------------------------------
 
-PIPELINE_DEPTH = 6      # DUT latency in clock cycles
+PIPELINE_DEPTH = 7      # DUT latency in clock cycles
 ULP_TOLERANCE  = 1      # Acceptable difference in raw bit patterns for normals
 CLOCK_PERIOD_NS = 10
 CLOCK_HOLD_NS = 1
@@ -260,11 +260,11 @@ async def matrix_checker(dut):
         label = (
            f"[{idx+1:>4}/{n}] "
            f"a={category(a_bits):>14}  "
-           f"a_hex=0x{a_bits:08x}  "
-           f"a_bin={a_bits:032b}  "
+        #    f"a_hex=0x{a_bits:08x}  "
+        #    f"a_bin={a_bits:032b}  "
            f"b={category(b_bits):>14}  "
-           f"b_hex=0x{b_bits:08x}  "
-           f"b_bin={b_bits:032b}  →  "
+        #    f"b_hex=0x{b_bits:08x}  "
+        #    f"b_bin={b_bits:032b}  →  "
         )
 
         if cat == "NaN":

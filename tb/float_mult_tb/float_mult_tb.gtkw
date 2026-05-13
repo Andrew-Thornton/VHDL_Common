@@ -1,26 +1,93 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Tue May  5 13:38:36 2026
+[*] Wed May 13 12:58:12 2026
 [*]
 [dumpfile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/wave.vcd"
-[dumpfile_mtime] "Tue May  5 13:34:50 2026"
-[dumpfile_size] 3570
+[dumpfile_mtime] "Wed May 13 12:49:50 2026"
+[dumpfile_size] 1272
 [savefile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/float_mult_tb.gtkw"
-[timestart] 0
+[timestart] 137480000
 [size] 1920 988
-[pos] -461 -195
-*-25.000000 80000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[sst_width] 527
-[signals_width] 102
+[pos] -1 -1
+*-24.000000 214150000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 397
+[signals_width] 262
 [sst_expanded] 1
 [sst_vpaned_height] 290
 @28
 float_mult.clk_i
-@29
 float_mult.srst_i
+@40020
+float_mult.a_i[31:0]
+float_mult.b_i[31:0]
+float_mult.c_o[31:0]
 @22
 float_mult.a_i[31:0]
 float_mult.b_i[31:0]
 float_mult.c_o[31:0]
+@200
+-first_clock_cycle
+@28
+float_mult.res_sign
+@40000024
+[fpshift_count] 23
+float_mult.a_mant[23:0]
+[fpshift_count] 23
+float_mult.b_mant[23:0]
+@24
+float_mult.b_exp_sr[7:0]
+float_mult.a_exp_sr[7:0]
+@420
+float_mult.debug_a_exp
+float_mult.debug_b_exp
+@200
+-second clock cycle
+@40000028
+[fpshift_count] 47
+float_mult.res_mant1[47:0]
+@40000024
+[fpshift_count] 46
+float_mult.res_mant1[47:0]
+@22
+float_mult.res_exp_nbs[8:0]
+@24
+float_mult.res_exp_nbs[8:0]
+@28
+float_mult.res_sign_z
+float_mult.inf_det_z
+float_mult.nan_det_z
+@200
+-third clock cycle
+@28
+float_mult.nan_det_zz
+float_mult.inf_det_zz
+float_mult.res_sign_zz
+float_mult.res_mant[47:0]
+@40000024
+[fpshift_count] 46
+float_mult.res_mant[47:0]
+@28
+float_mult.subnormal_shift_right
+@24
+float_mult.maybe_shift_right_amount[8:0]
+@28
+float_mult.is_max_exp
+@24
+float_mult.res_exp_norm_nbs[9:0]
+@200
+-fourth clock cycle
+@28
+float_mult.mant_shifted_right[55:0]
+@40000024
+[fpshift_count] 54
+float_mult.mant_shifted_right[55:0]
+@28
+float_mult.res_is_subnormal
+float_mult.is_max_exp_z
+float_mult.res_exp_norm_nbs_z[9:0]
+@24
+float_mult.res_exp_norm_nbs_z[9:0]
+@201
+-fifth clock cycle
 [pattern_trace] 1
 [pattern_trace] 0

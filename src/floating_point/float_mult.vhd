@@ -228,7 +228,7 @@ begin
   multiplier_process : process(clk_i)
   begin
     if rising_edge(clk_i) then
-      res_mant1 <= a_mant * b_mant; -- 1 int 23 frac
+      res_mant1 <= a_mant * b_mant; -- 1 int 23 frac * 1 int 23 frac = 2int 46 frac 
       res_mant  <= res_mant1;
       if srst_i = '1' then
         res_mant1 <= to_unsigned(0,48);
@@ -249,7 +249,7 @@ begin
   -- so we need to add 127 to the number
   -- This is the exponent calculation stage
   exponent_res_pre_shift_process : process(clk_i)
-    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
+    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"1FE"; --382 = 254+128 = 0z17E
   begin
     if rising_edge(clk_i) then
       res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr); 
