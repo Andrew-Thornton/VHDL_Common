@@ -304,6 +304,8 @@ async def matrix_checker(dut):
             await RisingEdge(dut.clk_i)
             await Timer(CLOCK_HOLD_NS, unit="ns")
 
+    return pass_count, fail_count, skip_count 
+
 
 @cocotb.test()
 async def test_float_mult_cross_matrix(dut):
@@ -341,7 +343,7 @@ async def test_float_mult_cross_matrix(dut):
 
     checking_results_task = cocotb.start_soon(matrix_checker(dut))
 
-    await checking_results_task
+    pass_count, fail_count, skip_count = await checking_results_task 
 
     # Drain pipeline before simulation ends
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH + 2)
