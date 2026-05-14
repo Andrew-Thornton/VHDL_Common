@@ -185,11 +185,7 @@ def expected_result(a_bits: int, b_bits: int):
     # Normal / subnormal – use Python arithmetic
     a_f = b2f(a_bits)
     b_f = b2f(b_bits)
-    test = float32_mul_bits(a_bits, b_bits)
-
     r_f = a_f * b_f
-
-    print(f'test : {test}')
 
     if math.isinf(r_f):
         return "Inf", None
@@ -197,11 +193,6 @@ def expected_result(a_bits: int, b_bits: int):
         return "NaN", None
     if r_f == 0.0:
         return "Zero", None
-    
-
-
-    print(f'r_f : {r_f}')
-    print(f'')
 
     return "normal", f2b(r_f)
 
