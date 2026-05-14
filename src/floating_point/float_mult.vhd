@@ -58,6 +58,7 @@ architecture rtl of float_mult is
   signal subnormal_shift_right    : std_logic := '0';
   signal res_exp_norm_nbs         : unsigned(9 downto 0) := to_unsigned(127,10);
   signal is_max_exp               : std_logic := '0';
+  signal is_one_below_max_exp     : std_logic := '0';
 
   -- 2nd to 3rd clock cycle shift register signals
   signal res_sign_z   : std_logic := '0';
@@ -71,11 +72,12 @@ architecture rtl of float_mult is
   signal shift_right_amount : unsigned(8 downto 0) := to_unsigned(0,9); -- TODO check bit width
 
   --4th clock cycle bitshifted signals
-  signal exp_shifted_right  : unsigned( 9 downto 0) := (others => '0');
-  signal mant_shifted_right : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
-  signal res_exp_norm_nbs_z : unsigned(9 downto 0) := to_unsigned(127,10);
-  signal is_max_exp_z       : std_logic := '0';
-  signal res_is_subnormal   : std_logic := '0';
+  signal exp_shifted_right      : unsigned( 9 downto 0) := (others => '0');
+  signal mant_shifted_right     : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
+  signal res_exp_norm_nbs_z     : unsigned(9 downto 0) := to_unsigned(127,10);
+  signal is_max_exp_z           : std_logic := '0';
+  signal is_one_below_max_exp_z : std_logic := '0';
+  signal res_is_subnormal       : std_logic := '0';
 
   signal res_sign_zzz       : std_logic := '0';
   signal inf_det_zzz        : std_logic := '0';
@@ -250,7 +252,8 @@ begin
   -- so we need to add 127 to the number
   -- This is the exponent calculation stage
   exponent_res_pre_shift_process : process(clk_i)
-    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"1FE"; --382 = 254+128 = 0z17E
+    constant MAX_EXP          : std_logic_vector( 9 downto 0) := 10x"17E"; --382 = 255+127 = 0x17E
+    constant ONE_LESS_MAX_EXP : std_logic_vector( 9 downto 0) := 10x"17D"; --381 = 254+127 = 0x17D
   begin
     if rising_edge(clk_i) then
       res_exp_nbs      <= ('0' & a_exp_sr) + ('0' & b_exp_sr); 
@@ -269,6 +272,11 @@ begin
       is_max_exp <= '0';
       if res_exp_nbs = unsigned(MAX_EXP) then
         is_max_exp <= '1';
+      end if;
+
+      is_one_below_max_exp <= '0';
+      if res_exp_nbs = unsigned(ONE_LESS_MAX_EXP) then
+        is_one_below_max_exp <= '1';
       end if;
 
       if srst_i = '1' then
@@ -314,10 +322,11 @@ begin
     variable larger_mant_shit : std_logic_vector(55 downto 0);
   begin
     if rising_edge(clk_i) then
-      larger_mant_shit   := std_logic_vector(res_mant) & "00000000";--48 bits -> 56 bits
-      mant_shifted_right <= unsigned(larger_mant_shit);
-      res_is_subnormal   <= subnormal_shift_right;
-      is_max_exp_z       <= is_max_exp;
+      larger_mant_shit       := std_logic_vector(res_mant) & "00000000";--48 bits -> 56 bits
+      mant_shifted_right     <= unsigned(larger_mant_shit);
+      res_is_subnormal       <= subnormal_shift_right;
+      is_max_exp_z           <= is_max_exp;
+      is_one_below_max_exp_z <= is_one_below_max_exp;
       if subnormal_shift_right = '1' then
         mant_shifted_right <= shift_right(unsigned(larger_mant_shit), to_integer(maybe_shift_right_amount));
       end if;
@@ -359,7 +368,8 @@ begin
     if rising_edge(clk_i) then
       shift_left_req     <= '0';
       dbg_shift_right_option <= 0;
-      if mant_shifted_right(55) = '1' and is_max_exp_z = '1' then
+      if ( (mant_shifted_right(55) = '1' or mant_shifted_right(54) = '1') and is_max_exp_z = '1' )
+      or ( (mant_shifted_right(55) = '1' and is_one_below_max_exp_z = '1' ) ) then
         -- this case the result is already at the maximum exponent
         -- and will cause an overflow into +/- infinity
         exp_shifted_right_norm  <= unsigned(NAN_INF_EXP);
