@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Thu May 14 12:31:42 2026
+[*] Thu May 14 13:00:59 2026
 [*]
 [dumpfile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/wave.vcd"
-[dumpfile_mtime] "Thu May 14 12:18:21 2026"
-[dumpfile_size] 2663
+[dumpfile_mtime] "Thu May 14 12:50:22 2026"
+[dumpfile_size] 2842
 [savefile] "/home/andrew/code/VHDL_Common/tb/float_mult_tb/float_mult_tb.gtkw"
-[timestart] 673100000
+[timestart] 763100000
 [size] 1920 988
 [pos] -1 -1
-*-24.000000 752200000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.000000 822570000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [sst_width] 397
 [signals_width] 329
 [sst_expanded] 1
@@ -20,6 +20,9 @@ float_mult.srst_i
 @40020
 float_mult.a_i[31:0]
 float_mult.b_i[31:0]
+@22
+float_mult.b_i[31:0]
+@40020
 float_mult.c_o[31:0]
 @28
 float_mult.a_sign
@@ -71,6 +74,9 @@ float_mult.nan_det_z
 float_mult.nan_det_zz
 float_mult.inf_det_zz
 float_mult.res_sign_zz
+@25
+float_mult.res_exp_norm_nbs[9:0]
+@28
 float_mult.res_mant[47:0]
 @40000024
 [fpshift_count] 46
@@ -80,22 +86,17 @@ float_mult.subnormal_shift_right
 @24
 float_mult.maybe_shift_right_amount[8:0]
 @28
-float_mult.is_max_exp
 float_mult.is_one_below_max_exp
-@24
-float_mult.res_exp_norm_nbs[9:0]
 @200
 -fourth clock cycle
 @28
 float_mult.res_sign_zzz
-@29
 float_mult.mant_shifted_right[55:0]
 @40000024
 [fpshift_count] 54
 float_mult.mant_shifted_right[55:0]
 @28
 float_mult.res_is_subnormal
-float_mult.is_max_exp_z
 float_mult.is_one_below_max_exp_z
 float_mult.res_exp_norm_nbs_z[9:0]
 @24
@@ -111,7 +112,7 @@ float_mult.exp_shifted_right_norm[9:0]
 @40000024
 [fpshift_count] 54
 float_mult.mant_shifted_right_norm[55:0]
-@25
+@24
 float_mult.dbg_shift_right_option
 @28
 float_mult.shift_left_req

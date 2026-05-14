@@ -125,23 +125,36 @@ begin
   -- or the 0 in 0.X is added.
   -- When the exponent is zero then the number is subnormal or 0.
   -- This process forms part of the first clock cycle.
+  -- when in subnormal it forces the exp to a min of one so that it is 2^-126 which is the same
   zero_or_non_zero_select : process(clk_i)
     constant EXP_ZEROS : std_logic_vector(7 downto 0) := x"00";
   begin
     if rising_edge(clk_i) then
       if (std_logic_vector(a_exp) = EXP_ZEROS) then
-        a_mant <= unsigned('0' & std_logic_vector(a_frac)); -- subnorm or zero
+        a_mant       <= unsigned('0' & std_logic_vector(a_frac)); -- subnorm or zero
+        a_exp_sr     <= to_unsigned(1,8);      
+        debug_a_exp  <= 1;
       else
-        a_mant <= unsigned('1' & std_logic_vector(a_frac)); -- normal
+        a_mant       <= unsigned('1' & std_logic_vector(a_frac)); -- normal
+        a_exp_sr     <= a_exp;                                           
+        debug_a_exp  <= to_integer(a_exp) - 127;    
       end if;
       if (std_logic_vector(b_exp) = EXP_ZEROS) then
-        b_mant <= unsigned('0' & std_logic_vector(b_frac)); -- subnorm or zero
+        b_mant       <= unsigned('0' & std_logic_vector(b_frac)); -- subnorm or zero
+        b_exp_sr     <= to_unsigned(1,8);      
+        debug_b_exp  <= 1;
       else
         b_mant <= unsigned('1' & std_logic_vector(b_frac)); -- normal
+        b_exp_sr     <= b_exp;      
+        debug_b_exp  <= to_integer(b_exp) - 127;  
       end if;
       if srst_i = '1' then
-        a_mant <= to_unsigned(0,24);
-        b_mant <= to_unsigned(0,24);
+        a_exp_sr    <= to_unsigned(0,8);                                              
+        b_exp_sr    <= to_unsigned(0,8);    
+        a_mant      <= to_unsigned(0,24);
+        b_mant      <= to_unsigned(0,24);  
+        debug_a_exp <= 0;
+        debug_b_exp <= 0;
       end if;
     end if;
   end process zero_or_non_zero_select;
@@ -162,22 +175,6 @@ begin
       end if;
     end if;
   end process result_sign_process;
-
-  -- This process just shift registers the exponents for now
-  -- this is first clock cycle 
-  shift_register_proc : process(clk_i)                                      
-  begin                                                                
-    if rising_edge(clk_i) then                             
-      a_exp_sr     <= a_exp;                                           
-      b_exp_sr     <= b_exp;      
-      debug_a_exp      <= to_integer(a_exp) - 127;
-      debug_b_exp      <= to_integer(b_exp) - 127;                                                                                    
-      if srst_i = '1' then                                                      
-        a_exp_sr <= to_unsigned(0,8);                                              
-        b_exp_sr <= to_unsigned(0,8);                                               
-      end if;                                                           
-    end if;                                             
-  end process shift_register_proc;
   
   -- This process just shift registers the exponents for now
   -- this is first clock cycle 
