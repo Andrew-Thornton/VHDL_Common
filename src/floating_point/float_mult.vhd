@@ -429,9 +429,9 @@ begin
   begin
     if rising_edge(clk_i) then
       shift_left_amount  <= to_unsigned(0,6);
-      for i in 1 to 46 loop
+      for i in 1 to 54 loop
         if mant_shifted_right(i) = '1' then
-          shift_left_amount  <= to_unsigned(55,6) - to_unsigned(i,6);
+          shift_left_amount  <= to_unsigned(54,6) - to_unsigned(i,6);
         end if;
       end loop;
     end if;
