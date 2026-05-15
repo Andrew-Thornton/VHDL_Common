@@ -57,7 +57,6 @@ ULP_TOLERANCE  = 1      # Acceptable difference in raw bit patterns for normals
 CLOCK_PERIOD_NS = 10
 CLOCK_HOLD_NS = 1
 
-
 # ---------------------------------------------------------------------------
 # IEEE-754 helpers
 # ---------------------------------------------------------------------------
@@ -130,23 +129,6 @@ STIMULUS_BITS: list[int] = [
     _SUBNORM_NEG,
 ]
 
-
-
-def bits_to_f32(u32):
-    return np.frombuffer(np.uint32(u32).tobytes(), dtype=np.float32)[0]
-
-def f32_to_bits(f):
-    return np.frombuffer(np.float32(f).tobytes(), dtype=np.uint32)[0]
-
-def float32_mul_bits(a_bits, b_bits):
-    a = bits_to_f32(a_bits)
-    b = bits_to_f32(b_bits)
-
-    with np.errstate(over='ignore', invalid='ignore'):
-        r = np.float32(a * b)
-    #r = np.float32(a * b)   # stays in float32 → overflow → inf
-
-    return f32_to_bits(r)
 # ---------------------------------------------------------------------------
 # Expected-result helper
 # ---------------------------------------------------------------------------
@@ -232,7 +214,7 @@ async def matrix_inputter(dut):
         dut.b_i.value = b_bits
         await RisingEdge(dut.clk_i)
 # ---------------------------------------------------------------------------
-# Main test
+# Checker coroutine
 # ---------------------------------------------------------------------------
 
 async def matrix_checker(dut):
@@ -251,11 +233,7 @@ async def matrix_checker(dut):
         label = (
            f"[{idx+1:>4}/{n}] "
            f"a={category(a_bits):>14}  "
-        #    f"a_hex=0x{a_bits:08x}  "
-        #    f"a_bin={a_bits:032b}  "
            f"b={category(b_bits):>14}  "
-        #    f"b_hex=0x{b_bits:08x}  "
-        #    f"b_bin={b_bits:032b}  →  "
         )
 
         if cat == "NaN":
@@ -306,6 +284,9 @@ async def matrix_checker(dut):
 
     return pass_count, fail_count, skip_count 
 
+# ---------------------------------------------------------------------------
+# Main test
+# ---------------------------------------------------------------------------
 
 @cocotb.test()
 async def test_float_mult_cross_matrix(dut):
@@ -334,7 +315,6 @@ async def test_float_mult_cross_matrix(dut):
     # Phase 2 – let the last transaction propagate through the pipeline
     # ------------------------------------------------------------------
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH)
-    # await RisingEdge(dut.clk_i)
     await Timer(CLOCK_HOLD_NS, unit="ns")
 
     # ------------------------------------------------------------------
