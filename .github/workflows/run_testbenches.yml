@@ -1,0 +1,36 @@
+name: VHDL Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install NVC
+        uses: nickg/setup-nvc@v1
+        with:
+          version: '1.20.1'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.3'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run float_add tests
+        working-directory: tb/float_add_tb
+        run: make
+
+      - name: Run float_mult tests
+        working-directory: tb/float_mult_tb
+        run: make
