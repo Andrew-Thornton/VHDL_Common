@@ -1,11 +1,5 @@
 -- Author        : Andrew Thornton
--- Creation Date : 2023-Dec-09
 -- Standard      : VDHL 2008
--------------------------------------------------------------------------------
--- Rev  Author       Date        Description
--- 1.0  A. Thornton  2023-Dec-09 Package Creation including conversion 
---                               slv -> float
--- 1.1  A. Thornton  2023-Dec-10 Created conversion of float -> slv
 -------------------------------------------------------------------------------
 
 library std;

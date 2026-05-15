@@ -3,9 +3,6 @@
 -- Author        : Andrew Thornton
 -- Standard      : cocotb / Python 3
 -------------------------------------------------------------------------------
--- Rev  Author       Date        Description
--- 1.0  A. Thornton  cocotb      Cross-matrix testbench for float_mult
--------------------------------------------------------------------------------
 -- Description
 --   cocotb testbench for the float_mult entity.
 --
