@@ -4,13 +4,13 @@
 -- Standard      : cocotb / Python 3
 -------------------------------------------------------------------------------
 -- Rev  Author       Date        Description
--- 1.0  A. Thornton  cocotb      Cross-matrix testbench for float_mult
+-- 1.0  A. Thornton  cocotb      Cross-matrix testbench for float_add
 -------------------------------------------------------------------------------
 -- Description
---   cocotb testbench for the float_mult entity.
+--   cocotb testbench for the float_add entity.
 --
---   The DUT is a 6-stage pipeline so every stimulus applied at cycle N
---   produces a result at cycle N+6.
+--   The DUT is a pipelined adder so every stimulus applied at cycle N
+--   produces a result at cycle N+PIPELINE_DEPTH.
 --
 --   Strategy
 --   --------
@@ -30,7 +30,7 @@
 --   PIPELINE_DEPTH cycles after each input was applied.
 --
 --   Expected values are computed by Python's own IEEE-754 float arithmetic
---   (via the struct module) so no hand-coded reference table is needed.
+--   (via numpy) so no hand-coded reference table is needed.
 --
 --   Tolerance
 --   ---------
@@ -52,10 +52,11 @@ from cocotb.triggers import RisingEdge, ClockCycles, Timer
 # Constants
 # ---------------------------------------------------------------------------
 
-PIPELINE_DEPTH = 7      # DUT latency in clock cycles
-ULP_TOLERANCE  = 1      # Acceptable difference in raw bit patterns for normals
+PIPELINE_DEPTH  = 5      # DUT latency in clock cycles
+ULP_TOLERANCE   = 1      # Acceptable difference in raw bit patterns for normals
 CLOCK_PERIOD_NS = 10
-CLOCK_HOLD_NS = 1
+CLOCK_HOLD_NS   = 1
+
 
 # ---------------------------------------------------------------------------
 # IEEE-754 helpers
@@ -151,23 +152,29 @@ def expected_result(a_bits: int, b_bits: int):
     if a_nan or b_nan:
         return "NaN", None
 
-    # Inf * 0 or 0 * Inf → NaN
-    if (a_inf and b_zero) or (a_zero and b_inf):
-        return "NaN", None
-
-    # Inf * non-zero finite → Inf (sign from XOR of signs)
-    if a_inf or b_inf:
-        sign = ((a_bits >> 31) ^ (b_bits >> 31)) & 1
+    # +Inf + (-Inf) or (-Inf) + (+Inf) → NaN
+    if a_inf and b_inf:
+        a_sign = (a_bits >> 31) & 1
+        b_sign = (b_bits >> 31) & 1
+        if a_sign != b_sign:
+            return "NaN", None
+        # Same-sign infinities → Inf
         return "Inf", None
 
-    # 0 * anything finite → 0
-    if a_zero or b_zero:
+    # One operand Inf, other finite → Inf
+    if a_inf or b_inf:
+        return "Inf", None
+
+    # Both zero → zero
+    if a_zero and b_zero:
         return "Zero", None
 
-    # Normal / subnormal – use Python arithmetic
+    # Normal / subnormal – use numpy float32 arithmetic
     a_f = b2f(a_bits)
     b_f = b2f(b_bits)
-    r_f = a_f * b_f
+
+    with np.errstate(over='ignore', invalid='ignore'):
+        r_f = a_f + b_f
 
     if math.isinf(r_f):
         return "Inf", None
@@ -176,13 +183,12 @@ def expected_result(a_bits: int, b_bits: int):
     if r_f == 0.0:
         return "Zero", None
 
-    return "normal", f2b(r_f)
+    return "normal", f2b(r_f) 
 
 
 # ---------------------------------------------------------------------------
 # Initialisation coroutine
 # ---------------------------------------------------------------------------
-
 
 async def initialise(dut):
     """Start clock, assert synchronous reset, flush pipeline."""
@@ -205,7 +211,6 @@ async def initialise(dut):
     dut._log.info("=== initialise: complete ===")
 
 
-
 async def matrix_inputter(dut):
     pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
     n     = len(pairs)
@@ -213,6 +218,8 @@ async def matrix_inputter(dut):
         dut.a_i.value = a_bits
         dut.b_i.value = b_bits
         await RisingEdge(dut.clk_i)
+
+
 # ---------------------------------------------------------------------------
 # Checker coroutine
 # ---------------------------------------------------------------------------
@@ -220,7 +227,7 @@ async def matrix_inputter(dut):
 async def matrix_checker(dut):
     pass_count  = 0
     fail_count  = 0
-    skip_count  = 0     # special-value results checked categorically
+    skip_count  = 0     # reserved for any future categorically-skipped cases
 
     pairs = list(itertools.product(STIMULUS_BITS, repeat=2))
     n     = len(pairs)
@@ -231,9 +238,9 @@ async def matrix_checker(dut):
         cat, exp_bits = expected_result(a_bits, b_bits)
 
         label = (
-           f"[{idx+1:>4}/{n}] "
-           f"a={category(a_bits):>14}  "
-           f"b={category(b_bits):>14}  "
+            f"[{idx+1:>4}/{n}] "
+            f"a={category(a_bits):>14}  "
+            f"b={category(b_bits):>14}  "
         )
 
         if cat == "NaN":
@@ -282,14 +289,15 @@ async def matrix_checker(dut):
             await RisingEdge(dut.clk_i)
             await Timer(CLOCK_HOLD_NS, unit="ns")
 
-    return pass_count, fail_count, skip_count 
+    return pass_count, fail_count, skip_count
+
 
 # ---------------------------------------------------------------------------
 # Main test
 # ---------------------------------------------------------------------------
 
 @cocotb.test()
-async def test_float_mult_cross_matrix(dut):
+async def test_float_add_cross_matrix(dut):
     """
     Apply every ordered (a, b) pair from STIMULUS_BITS to the DUT
     back-to-back, then verify each output PIPELINE_DEPTH cycles after
@@ -320,10 +328,9 @@ async def test_float_mult_cross_matrix(dut):
     # ------------------------------------------------------------------
     # Phase 3 – replay stimulus order, reading output one cycle per pair
     # ------------------------------------------------------------------
-
     checking_results_task = cocotb.start_soon(matrix_checker(dut))
 
-    pass_count, fail_count, skip_count = await checking_results_task 
+    pass_count, fail_count, skip_count = await checking_results_task
 
     # Drain pipeline before simulation ends
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH + 2)
