@@ -1,0 +1,66 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Sat May 23 08:03:10 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/fixed_to_floating_tb/wave.vcd"
+[dumpfile_mtime] "Sat May 23 08:02:36 2026"
+[dumpfile_size] 643
+[savefile] "/home/andrew/code/VHDL_Common/tb/fixed_to_floating_tb/wave.gtkw"
+[timestart] 0
+[size] 1920 988
+[pos] -1 -1
+*-26.000000 182800000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 493
+[signals_width] 174
+[sst_expanded] 1
+[sst_vpaned_height] 296
+@28
+fixed_to_floating.clk_i
+fixed_to_floating.srst_i
+fixed_to_floating.a_i[3:-4]
+@40000420
+[fpshift_count] 4
+fixed_to_floating.a_i[3:-4]
+@200
+-clock cycle one
+@28
+fixed_to_floating.res_sign
+fixed_to_floating.magnitude[4:-4]
+@40000024
+[fpshift_count] 4
+fixed_to_floating.magnitude[4:-4]
+@200
+-second clock cycle
+@420
+fixed_to_floating.left_most_one
+@28
+fixed_to_floating.magnitude_z[4:-4]
+@40000024
+[fpshift_count] 4
+fixed_to_floating.magnitude_z[4:-4]
+@200
+-third clock cycle
+@28
+fixed_to_floating.res_mant[4:-48]
+@40000024
+[fpshift_count] 48
+fixed_to_floating.res_mant[4:-48]
+@28
+fixed_to_floating.res_frac_slv[22:0]
+@40000024
+[fpshift_count] 23
+fixed_to_floating.res_frac_slv[22:0]
+@420
+fixed_to_floating.debug_res_exp
+@24
+fixed_to_floating.res_exp
+fixed_to_floating.res_exp_uns[7:0]
+fixed_to_floating.res_exp_slv[7:0]
+@200
+-output
+@28
+fixed_to_floating.c_o[31:0]
+@40021
+fixed_to_floating.c_o[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
