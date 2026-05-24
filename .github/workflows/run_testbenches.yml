@@ -2,6 +2,8 @@ name: VHDL Tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -31,4 +33,12 @@ jobs:
 
       - name: Run float_mult tests
         working-directory: tb/float_mult_tb
+        run: make
+
+      - name: Run Raw Decimator tests
+        working-directory: tb/raw_decimator_tb
+        run: make
+
+      - name: Run Decimator Comb tests
+        working-directory: tb/dec_cic_filter_tb
         run: make
