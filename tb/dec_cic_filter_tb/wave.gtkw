@@ -1,0 +1,86 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Mon Jun  8 14:25:27 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/dec_cic_filter_tb/wave.vcd"
+[dumpfile_mtime] "Mon Jun  8 14:20:10 2026"
+[dumpfile_size] 19188
+[savefile] "/home/andrew/code/VHDL_Common/tb/dec_cic_filter_tb/wave.gtkw"
+[timestart] 299386000000
+[size] 1920 988
+[pos] -1 -1
+*-28.000000 299598000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] dec_cic_filter.
+[treeopen] dec_cic_filter.integator_i.
+[treeopen] dec_cic_filter.integator_i.tap_generator_g(0).
+[sst_width] 335
+[signals_width] 212
+[sst_expanded] 1
+[sst_vpaned_height] 289
+@28
+dec_cic_filter.clk_i
+dec_cic_filter.srst_i
+@8420
+dec_cic_filter.a_i[15:0]
+@20000
+-
+-
+-
+-
+@420
+dec_cic_filter.a_i[15:0]
+@28
+dec_cic_filter.a_vld_i
+@200
+-integrator
+@28
+dec_cic_filter.integrator_vld
+@420
+dec_cic_filter.integrator_data[15:0]
+@8420
+dec_cic_filter.integrator_data[15:0]
+@20000
+-
+-
+-
+-
+@200
+-decimator
+@28
+dec_cic_filter.decimate_vld
+@420
+dec_cic_filter.decimate_data[15:0]
+@8421
+dec_cic_filter.decimate_data[15:0]
+@20000
+-
+-
+-
+-
+@200
+-comb
+@28
+dec_cic_filter.b_vld_o
+@420
+dec_cic_filter.comb_data[15:0]
+@8420
+dec_cic_filter.comb_data[15:0]
+@20000
+-
+-
+-
+-
+@200
+-output
+@28
+dec_cic_filter.b_vld_o
+@420
+dec_cic_filter.b_o[15:0]
+@8420
+dec_cic_filter.b_o[15:0]
+@20000
+-
+-
+-
+[pattern_trace] 1
+[pattern_trace] 0

@@ -1,0 +1,28 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Sun May 31 11:07:34 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/raw_decimator_tb/wave.vcd"
+[dumpfile_mtime] "Sun May 31 11:07:01 2026"
+[dumpfile_size] 418
+[savefile] "/home/andrew/code/VHDL_Common/tb/raw_decimator_tb/wave.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-26.000000 72800000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 209
+[signals_width] 102
+[sst_expanded] 1
+[sst_vpaned_height] 154
+@28
+raw_decimator.clk_i
+raw_decimator.srst_i
+raw_decimator.a_vld_i
+@22
+raw_decimator.a_i[15:0]
+@28
+raw_decimator.b_vld_o
+@23
+raw_decimator.b_o[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

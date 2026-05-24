@@ -1,3 +1,4 @@
 cocotb==2.0.1
 find_libpython==0.5.1
 numpy==2.4.4
+matplotlib==3.10.9
