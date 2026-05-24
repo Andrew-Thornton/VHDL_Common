@@ -8,6 +8,8 @@
 *.o
 *.cf
 *.vcd
+*.csv#
+*.ods#
 
 **/modelsim.ini
 **/vlog.opt
