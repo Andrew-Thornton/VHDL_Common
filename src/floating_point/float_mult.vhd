@@ -173,7 +173,6 @@ begin
     constant INF_OR_NAN_EXP : std_logic_vector( 7 downto 0) := x"FF";
     constant SUB_NORM_EXP   : std_logic_vector( 7 downto 0) := x"00";
     constant INF_MANT       : std_logic_vector(22 downto 0) := 23x"000000";
-    constant ZERO_MANT      : std_logic_vector(22 downto 0) := 23x"000000";
   begin
     if rising_edge(clk_i) then
       nan_det   <= '0';
@@ -347,11 +346,8 @@ begin
   -- or 0<=X<1 for a subnormal number
   shift_right_proc : process(clk_i)
     constant NAN_INF_EXP     : std_logic_vector( 9 downto 0) := 10x"3FF";
-    constant NAN_MANT        : std_logic_vector(55 downto 0 ):= x"00000080000000";
     constant INF_MANT        : std_logic_vector(55 downto 0 ):= x"00000000000000";
     constant ZERO_EXP        : unsigned( 9 downto 0) := to_unsigned(0, 10);
-    constant ZERO_MANT       : unsigned(47 downto 0) := to_unsigned(0,48);
-    constant MAX_EXP         : std_logic_vector( 9 downto 0) := 10x"0FE";
   begin
     if rising_edge(clk_i) then
       shift_left_req     <= '0';
