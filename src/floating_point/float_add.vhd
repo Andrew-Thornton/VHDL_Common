@@ -300,7 +300,6 @@ begin
     constant ZERO_EXP        : unsigned( 7 downto 0) := to_unsigned(0, 8);
     constant ZERO_MANT       : unsigned(25 downto 0) := to_unsigned(0,26);
     constant MAX_EXP         : std_logic_vector( 7 downto 0) := x"FE";
-    constant S_NORM_MAX_MANT : std_logic_vector(25 downto 0) := 26x"0FFFFFE";
   begin
     if rising_edge(clk_i) then
       result_sign_four  <= result_sign;

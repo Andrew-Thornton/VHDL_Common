@@ -62,10 +62,8 @@ architecture rtl of float_mult is
   signal nan_det_zz   : std_logic := '0';
   signal zero_det_z   : std_logic := '0';
   signal zero_det_zz  : std_logic := '0';
-  signal shift_right_amount : unsigned(8 downto 0) := to_unsigned(0,9); -- TODO check bit width
-
+  
   --4th clock cycle bitshifted signals
-  signal exp_shifted_right      : unsigned( 9 downto 0) := (others => '0');
   signal mant_shifted_right     : unsigned(55 downto 0) := (others => '0'); --2 int 46 frac
   signal res_exp_norm_nbs_z     : unsigned(9 downto 0) := to_unsigned(127,10);
   signal is_one_below_max_exp_z : std_logic := '0';
