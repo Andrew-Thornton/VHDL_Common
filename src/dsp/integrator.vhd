@@ -35,10 +35,6 @@ architecture rtl of integrator is
   signal tap_signal : signed_array_t(0 to NUMBER_TAPS_N)(OUTPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal tap_vld    : std_logic_vector(0 to NUMBER_TAPS_N) := (others => '0');
 
-  -- Per-tap raw outputs (each stage output is INPUT_DATA_W+tap bits wide)
-  -- We collect them in a matching-width array then resize into tap_signal.
-  signal tap_raw_out : signed_array_t(0 to NUMBER_TAPS_N-1)(OUTPUT_DATA_W-1 downto 0) := (others => (others => '0'));
-
 begin
 
   -- input mapping
@@ -66,7 +62,7 @@ begin
       b_vld_o => tap_vld(tap + 1)
     );
 
-    --allow for wrap around
+    -- allow for wrap around
     tap_signal(tap + 1) <= stage_out(OUTPUT_DATA_W-1 downto 0);
 
   end generate tap_generator_g;
