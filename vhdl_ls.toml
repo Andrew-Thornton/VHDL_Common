@@ -1,8 +1,8 @@
 standard = "2008"
 
 [libraries]
-floating_point.files = [
-    'floating_point/*.vhd',
+defaultlib.files = [
+    './src/**/*.vhd'
 ]
 
 [lint]
