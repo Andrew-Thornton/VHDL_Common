@@ -42,7 +42,6 @@ architecture rtl of fixed_to_floating is
   -- third clock cycle
   constant MANT_HIGH   : integer := integer_max(INT_BITS, 0);
   constant MANT_LOW    : integer := integer_min(-FRAC_BITS, -48);
-  constant MANT_BITS   : integer := MANT_HIGH + MANT_LOW+1;
   signal res_mant      : ufixed(MANT_HIGH downto MANT_LOW)  := to_ufixed(0.0,MANT_HIGH,MANT_LOW);
   signal res_exp_slv   : std_logic_vector( 7 downto 0) := (others => '0');
   signal res_frac_slv  : std_logic_vector(22 downto 0) := (others => '0');
