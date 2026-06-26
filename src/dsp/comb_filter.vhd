@@ -13,6 +13,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library vhdl_common;
+
 entity comb_filter is
   generic(
     DIFFERENTIAL_DELAY : positive := 1;
@@ -50,7 +52,7 @@ begin
 
   begin
 
-    my_tap_i : entity work.comb_filter_stage
+    my_tap_i : entity vhdl_common.comb_filter_stage
       generic map(
         DIFFERENTIAL_DELAY => DIFFERENTIAL_DELAY,
         INPUT_DATA_W       => INPUT_DATA_W
