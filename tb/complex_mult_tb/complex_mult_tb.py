@@ -65,6 +65,20 @@ async def data_inputter(dut,stimuli):
     dut.b_imag_i.value = 0
     dut.vld_i.value = 0
 
+async def data_checker(dut,stimuli):
+    for a,b in stimuli:
+        expected_value = a*b
+        expected_real = int(np.real(expected_value))
+        expected_imag = int(np.imag(expected_value))
+        received_real = dut.c_real_o.value.to_signed()
+        received_imag = dut.c_imag_o.value.to_signed()
+        dut._log.info(f"test a= {a}, b= {b},  expected {expected_real} + 1j*{expected_imag}")
+        dut._log.info(f"test a= {a}, b= {b},  received {received_real} + 1j*{received_imag}")
+        
+        assert dut.vld_o.value == 1
+        assert received_real == expected_real
+        assert received_imag == expected_imag
+        await RisingEdge(dut.clk_i)
 
 
 @cocotb.test()
@@ -92,4 +106,6 @@ async def test_complex_mult_matrix(dut):
     #     dut._log.info(f"a = {a}, b = {b}")
 
     input_task = cocotb.start_soon(data_inputter(dut, test_set))
-    await input_task
+    await ClockCycles(dut.clk_i,PIPELINE_DEPTH+1)
+    output_checker_task = cocotb.start_soon(data_checker(dut,test_set))
+    await output_checker_task
