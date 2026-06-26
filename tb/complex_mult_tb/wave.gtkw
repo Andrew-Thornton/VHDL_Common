@@ -1,0 +1,40 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Fri Jun 26 14:35:41 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/complex_mult_tb/wave.vcd"
+[dumpfile_mtime] "Fri Jun 26 14:35:27 2026"
+[dumpfile_size] 471
+[savefile] "/home/andrew/code/VHDL_Common/tb/complex_mult_tb/wave.gtkw"
+[timestart] 0
+[size] 1920 988
+[pos] -756 -328
+*0.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 209
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 290
+@22
+complex_mult.a_imag_i[15:0]
+complex_mult.a_real_i[15:0]
+complex_mult.ac[31:0]
+complex_mult.ad[31:0]
+complex_mult.b_imag_i[15:0]
+complex_mult.b_real_i[15:0]
+complex_mult.bc[31:0]
+complex_mult.bd[31:0]
+complex_mult.c_imag[32:0]
+@23
+complex_mult.c_imag_o[32:0]
+@22
+complex_mult.c_real[32:0]
+complex_mult.c_real_o[32:0]
+@28
+complex_mult.clk_i
+complex_mult.srst_i
+complex_mult.vld_i
+complex_mult.vld_o
+complex_mult.vld_z
+complex_mult.vld_zz
+[pattern_trace] 1
+[pattern_trace] 0

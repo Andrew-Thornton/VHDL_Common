@@ -27,12 +27,6 @@ PIPELINE_DEPTH  = 2      # DUT latency in clock cycles
 CLOCK_PERIOD_NS = 10
 CLOCK_HOLD_NS   = 1
 
-
-# ---------------------------------------------------------------------------
-# Stimulus set – one entry per interesting IEEE-754 category / magnitude
-# ---------------------------------------------------------------------------
-
-
 STIMULUS_INTS: list[int] = [
     0,
     1,
@@ -54,6 +48,23 @@ async def reset(dut):
     dut.srst_i.value = 1
     await ClockCycles(dut.clk_i,10)
     dut.srst_i.value = 0
+
+
+
+async def data_inputter(dut,stimuli):
+    for input_num in range(len(stimuli)):
+        dut.a_real_i.value = int(np.real(stimuli[input_num][0]))
+        dut.a_imag_i.value = int(np.imag(stimuli[input_num][0]))
+        dut.b_real_i.value = int(np.real(stimuli[input_num][1]))
+        dut.b_imag_i.value = int(np.imag(stimuli[input_num][1]))
+        dut.vld_i.value = 1
+        await RisingEdge(dut.clk_i)
+    dut.a_real_i.value = 0
+    dut.a_imag_i.value = 0
+    dut.b_real_i.value = 0
+    dut.b_imag_i.value = 0
+    dut.vld_i.value = 0
+
 
 
 @cocotb.test()
@@ -79,3 +90,5 @@ async def test_complex_mult_matrix(dut):
     # dut._log.info(f"Test set is:")
     # for a,b in test_set:
     #     dut._log.info(f"a = {a}, b = {b}")
+
+    input_task = cocotb.start_soon(data_inputter(dut, cmplx_stimuli))
