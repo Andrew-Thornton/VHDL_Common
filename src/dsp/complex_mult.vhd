@@ -9,9 +9,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library vhdl_common;
-use vhdl_common.math_utils_pkg.ceil_log2;
-
 entity complex_mult is
   generic(
     INPUT_DATA_W      : positive := 16
