@@ -4,8 +4,10 @@
 SIM ?= nvc
 TOPLEVEL_LANG ?= vhdl
 
-VHDL_SOURCES += $(PWD)/../../src/floating_point/common_int_tools_pkg.vhd
-VHDL_SOURCES += $(PWD)/../../src/floating_point/common_float_tools_pkg.vhd
+VHDL_LIB_ORDER = vhdl_common
+
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/floating_point/common_int_tools_pkg.vhd
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/floating_point/common_float_tools_pkg.vhd
 VHDL_SOURCES += $(PWD)/../../src/floating_point/fixed_to_floating.vhd
 
 COCOTB_TOPLEVEL = fixed_to_floating
