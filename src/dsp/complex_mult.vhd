@@ -49,8 +49,8 @@ begin
       bc <= a_imag_i * b_real_i;
       vld_z <= vld_i;
 
-      c_real_o <= resize(ac, 2*INPUT_DATA_W) - resize(bd, 2*INPUT_DATA_W);
-      c_imag_o <= resize(ad, 2*INPUT_DATA_W) + resize(bc, 2*INPUT_DATA_W);
+      c_real_o <= resize(ac, c_real_o'length) - resize(bd, c_real_o'length);
+      c_imag_o <= resize(ad, c_imag_o'length) + resize(bc, c_imag_o'length);
       vld_o <= vld_z;
     end if;
   end process;
