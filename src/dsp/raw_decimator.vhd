@@ -10,7 +10,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.math_utils_pkg.all;
+library vhdl_common;
+use vhdl_common.math_utils_pkg.all;
 
 entity raw_decimator is
   generic(
