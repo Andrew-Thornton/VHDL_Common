@@ -52,11 +52,11 @@ async def reset(dut):
 
 
 async def data_inputter(dut,stimuli):
-    for input_num in range(len(stimuli)):
-        dut.a_real_i.value = int(np.real(stimuli[input_num][0]))
-        dut.a_imag_i.value = int(np.imag(stimuli[input_num][0]))
-        dut.b_real_i.value = int(np.real(stimuli[input_num][1]))
-        dut.b_imag_i.value = int(np.imag(stimuli[input_num][1]))
+    for a,b in stimuli:
+        dut.a_real_i.value = int(np.real(a))
+        dut.a_imag_i.value = int(np.imag(a))
+        dut.b_real_i.value = int(np.real(b))
+        dut.b_imag_i.value = int(np.imag(b))
         dut.vld_i.value = 1
         await RisingEdge(dut.clk_i)
     dut.a_real_i.value = 0
@@ -91,4 +91,5 @@ async def test_complex_mult_matrix(dut):
     # for a,b in test_set:
     #     dut._log.info(f"a = {a}, b = {b}")
 
-    input_task = cocotb.start_soon(data_inputter(dut, cmplx_stimuli))
+    input_task = cocotb.start_soon(data_inputter(dut, test_set))
+    await input_task
