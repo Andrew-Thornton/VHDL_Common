@@ -33,8 +33,12 @@ architecture rtl of complex_mult is
   signal bd : signed((2*INPUT_DATA_W)-1 downto 0) := (others => '0');
   signal ad : signed((2*INPUT_DATA_W)-1 downto 0) := (others => '0');
   signal bc : signed((2*INPUT_DATA_W)-1 downto 0) := (others => '0');  
+  signal vld_z : std_logic := '0';
 
-  signal vld_z : std_logic;
+  signal c_real : signed(2*INPUT_DATA_W downto 0) := (others => '0');
+  signal c_imag : signed(2*INPUT_DATA_W downto 0) := (others => '0');
+  signal vld_zz : std_logic:= '0';
+
 begin
 
   --the following computes
@@ -49,10 +53,14 @@ begin
       bc <= a_imag_i * b_real_i;
       vld_z <= vld_i;
 
-      c_real_o <= resize(ac, c_real_o'length) - resize(bd, c_real_o'length);
-      c_imag_o <= resize(ad, c_imag_o'length) + resize(bc, c_imag_o'length);
-      vld_o <= vld_z;
+      c_real <= resize(ac, c_real_o'length) - resize(bd, c_real_o'length);
+      c_imag <= resize(ad, c_imag_o'length) + resize(bc, c_imag_o'length);
+      vld_zz <= vld_z;
     end if;
   end process;
+
+  c_real_o <= c_real;
+  c_imag_o <= c_imag;
+  vld_o <= vld_zz;
 
 end rtl;
