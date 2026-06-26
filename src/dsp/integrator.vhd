@@ -10,7 +10,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.math_utils_pkg.all;
+library vhdl_common;
+use vhdl_common.math_utils_pkg.all;
 
 entity integrator is
   generic(
@@ -48,7 +49,7 @@ begin
 
   begin
     
-    my_tap_i : entity work.integrator_stage 
+    my_tap_i : entity vhdl_common.integrator_stage 
     generic map(
       DIFFERENTIAL_DELAY => DIFFERENTIAL_DELAY,
       INPUT_DATA_W       => INPUT_DATA_W + tap        -- input width for this stage

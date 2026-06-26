@@ -12,8 +12,9 @@ use ieee.numeric_std.all;
 use ieee.fixed_pkg.all;
 use ieee.fixed_float_types.all;
 
-use work.common_float_tools_pkg.all;
-use work.common_int_tools_pkg.all;
+library vhdl_common;
+use vhdl_common.common_float_tools_pkg.all;
+use vhdl_common.common_int_tools_pkg.all;
 
 entity fixed_to_floating is
   generic(

@@ -10,7 +10,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.math_utils_pkg.all;
+library vhdl_common;
+use vhdl_common.math_utils_pkg.all;
 
 entity dec_cic_filter is
   generic(
@@ -48,7 +49,7 @@ architecture rtl of dec_cic_filter is
 begin
 
   --Integrator stages
-  integator_i : entity work.integrator
+  integator_i : entity vhdl_common.integrator
   generic map(
     DIFFERENTIAL_DELAY => DIFFERENTIAL_DELAY,
     NUMBER_TAPS_N      => NUMBER_TAPS_N,
@@ -64,7 +65,7 @@ begin
   );
 
   --DECIMATE
-  dec_i : entity work.raw_decimator
+  dec_i : entity vhdl_common.raw_decimator
   generic map(
     DECIMATION_RATE_R => DECIMATION_RATE_R,
     INPUT_DATA_W      => INTEGRATOR_OUT_BITS
@@ -78,7 +79,7 @@ begin
   );
 
   -- COMB STAGES
-  comb_i : entity work.comb_filter
+  comb_i : entity vhdl_common.comb_filter
   generic map(
     DIFFERENTIAL_DELAY => DIFFERENTIAL_DELAY,
     NUMBER_TAPS_N      => NUMBER_TAPS_N,
