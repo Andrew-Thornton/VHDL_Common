@@ -4,7 +4,9 @@
 SIM ?= nvc
 TOPLEVEL_LANG ?= vhdl
 
-VHDL_SOURCES += $(PWD)/../../src/dsp/math_utils_pkg.vhd
+VHDL_LIB_ORDER = vhdl_common
+
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/math_utils_pkg.vhd
 VHDL_SOURCES += $(PWD)/../../src/dsp/raw_decimator.vhd
 
 COCOTB_TOPLEVEL = raw_decimator

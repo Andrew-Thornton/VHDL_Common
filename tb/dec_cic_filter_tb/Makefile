@@ -4,12 +4,14 @@
 SIM ?= nvc
 TOPLEVEL_LANG ?= vhdl
 
-VHDL_SOURCES += $(PWD)/../../src/dsp/math_utils_pkg.vhd
-VHDL_SOURCES += $(PWD)/../../src/dsp/comb_filter_stage.vhd
-VHDL_SOURCES += $(PWD)/../../src/dsp/comb_filter.vhd
-VHDL_SOURCES += $(PWD)/../../src/dsp/raw_decimator.vhd
-VHDL_SOURCES += $(PWD)/../../src/dsp/integrator_stage.vhd
-VHDL_SOURCES += $(PWD)/../../src/dsp/integrator.vhd
+VHDL_LIB_ORDER = vhdl_common
+
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/math_utils_pkg.vhd
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/comb_filter_stage.vhd
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/comb_filter.vhd
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/raw_decimator.vhd
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/integrator_stage.vhd
+VHDL_SOURCES_vhdl_common += $(PWD)/../../src/dsp/integrator.vhd
 VHDL_SOURCES += $(PWD)/../../src/dsp/dec_cic_filter.vhd
 
 COCOTB_TOPLEVEL = dec_cic_filter
