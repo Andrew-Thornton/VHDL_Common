@@ -42,3 +42,7 @@ jobs:
       - name: Run Decimator Comb tests
         working-directory: tb/dec_cic_filter_tb
         run: make
+
+      - name: Run Complex Mult tests
+        working-directory: tb/complex_mult_tb
+        run: make
