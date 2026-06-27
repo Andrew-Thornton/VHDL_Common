@@ -1,7 +1,7 @@
 standard = "2008"
 
 [libraries]
-defaultlib.files = [
+vhdl_common.files = [
     './src/**/*.vhd'
 ]
 

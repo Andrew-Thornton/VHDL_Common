@@ -1,0 +1,140 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Sat Jun 27 16:38:34 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/atan2_cordic_tb/wave.vcd"
+[dumpfile_mtime] "Sat Jun 27 16:36:18 2026"
+[dumpfile_size] 1881
+[savefile] "/home/andrew/code/VHDL_Common/tb/atan2_cordic_tb/wave.gtkw"
+[timestart] 618310000
+[size] 1920 988
+[pos] -1 -1
+*-24.000000 662190000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 532
+[signals_width] 315
+[sst_expanded] 1
+[sst_vpaned_height] 290
+@28
+atan2_cordic.clk_i
+atan2_cordic.srst_i
+@420
+atan2_cordic.real_i[15:0]
+atan2_cordic.imag_i[15:0]
+@28
+atan2_cordic.vld_i
+@420
+atan2_cordic.real_quadrant_mod[15:0]
+atan2_cordic.imag_quadrant_mod[15:0]
+@28
+atan2_cordic.quadrant
+@420
+atan2_cordic.quadrant_offset[3:-28]
+@28
+atan2_cordic.vld_o
+@40000421
+[fpshift_count] 28
+atan2_cordic.phase_o[3:-28]
+@22
+atan2_cordic.debug_k
+@40000420
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[0][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[1][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[2][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[3][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[4][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[5][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[6][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[7][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[8][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[9][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[10][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[11][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[12][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[13][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[14][3:-28]
+[fpshift_count] 28
+atan2_cordic.debug_theta_table[15][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[0][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[1][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[2][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[3][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[4][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[5][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[6][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[7][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[8][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[9][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[10][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[11][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[12][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[13][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[14][3:-28]
+[fpshift_count] 28
+atan2_cordic.theta_s[15][3:-28]
+@22
+atan2_cordic.vld_sr[15:0]
+@420
+atan2_cordic.x_s[0][15:0]
+atan2_cordic.x_s[1][15:0]
+atan2_cordic.x_s[2][15:0]
+atan2_cordic.x_s[3][15:0]
+atan2_cordic.x_s[4][15:0]
+atan2_cordic.x_s[5][15:0]
+atan2_cordic.x_s[6][15:0]
+atan2_cordic.x_s[7][15:0]
+atan2_cordic.x_s[8][15:0]
+atan2_cordic.x_s[9][15:0]
+atan2_cordic.x_s[10][15:0]
+atan2_cordic.x_s[11][15:0]
+atan2_cordic.x_s[12][15:0]
+atan2_cordic.x_s[13][15:0]
+atan2_cordic.x_s[14][15:0]
+atan2_cordic.x_s[15][15:0]
+atan2_cordic.y_s[0][15:0]
+atan2_cordic.y_s[1][15:0]
+atan2_cordic.y_s[2][15:0]
+atan2_cordic.y_s[3][15:0]
+atan2_cordic.y_s[4][15:0]
+atan2_cordic.y_s[5][15:0]
+atan2_cordic.y_s[6][15:0]
+atan2_cordic.y_s[7][15:0]
+atan2_cordic.y_s[8][15:0]
+atan2_cordic.y_s[9][15:0]
+atan2_cordic.y_s[10][15:0]
+atan2_cordic.y_s[11][15:0]
+atan2_cordic.y_s[12][15:0]
+atan2_cordic.y_s[13][15:0]
+atan2_cordic.y_s[14][15:0]
+atan2_cordic.y_s[15][15:0]
+[pattern_trace] 1
+[pattern_trace] 0
