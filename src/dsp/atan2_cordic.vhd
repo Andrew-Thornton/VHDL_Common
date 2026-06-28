@@ -63,8 +63,10 @@ architecture rtl of atan2_cordic is
   signal x_s : array_signed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal y_s : array_signed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal theta_s : array_sfixed_out_width_t(0 to ITERATIONS-1) := (others => (others => '0'));
-  signal vld_sr : std_logic_vector(ITERATIONS-1 downto 0) := (others => '0');
+  signal vld_sr : std_logic_vector(ITERATIONS downto 0) := (others => '0');
 
+  signal quadrant_offset_sr : array_sfixed_out_width_t(0 to ITERATIONS-1) := (others => (others => '0'));
+  signal quadrant_modified : sfixed(0 downto -(OUTPUT_DATA_W-1)) := (others => '0');
 
 begin
 
@@ -104,7 +106,10 @@ process(clk_i)
 begin
   if rising_edge(clk_i) then
     vld_sr(0) <= vld_z;
-    vld_sr(ITERATIONS-1 downto 1) <= vld_sr(ITERATIONS-2 downto 0);
+    vld_sr(ITERATIONS downto 1) <= vld_sr(ITERATIONS-1 downto 0);
+    quadrant_offset_sr(0) <= quadrant_offset;
+    quadrant_offset_sr(1 to ITERATIONS-1) <= quadrant_offset_sr(0 to ITERATIONS-2);
+
     x_s(0) <= real_quadrant_mod;
     y_s(0) <= imag_quadrant_mod;
     theta_s(0) <= (others => '0');
@@ -121,11 +126,15 @@ begin
       end if;
 
     end loop;
+
+    -- add the offset if required to extend the range from -pi/2 /pi/2 to -pi=>pi
+    quadrant_modified <= resize(theta_s(ITERATIONS-1) + quadrant_offset_sr(ITERATIONS-1),quadrant_modified'high,quadrant_modified'low);
+
   end if;
 end process;
 
 -- change later
-phase_o <= signed(to_slv(theta_s(ITERATIONS-1)));
-vld_o   <= vld_sr(ITERATIONS-1);
+phase_o <= signed(to_slv(quadrant_modified));
+vld_o   <= vld_sr(ITERATIONS);
 
 end rtl;
