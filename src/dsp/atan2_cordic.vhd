@@ -50,7 +50,7 @@ architecture rtl of atan2_cordic is
     variable theta_table : array_sfixed_out_width_t(0 to iters-1);
   begin
     for i in 0 to iters-1 loop
-      theta_real := (arctan(1.0 / (2.0**i)))*MATH_1_OVER_PI;
+      theta_real := (arctan(1.0 / (2.0**i))) * MATH_1_OVER_PI;
       theta_table(i) := to_sfixed(theta_real, theta_table(i)'high, theta_table(i)'low);
     end loop;
     return theta_table;
@@ -64,6 +64,7 @@ architecture rtl of atan2_cordic is
   signal y_s : array_signed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal theta_s : array_sfixed_out_width_t(0 to ITERATIONS-1) := (others => (others => '0'));
   signal vld_sr : std_logic_vector(ITERATIONS-1 downto 0) := (others => '0');
+
 
 begin
 
@@ -104,30 +105,24 @@ begin
   if rising_edge(clk_i) then
     vld_sr(0) <= vld_z;
     vld_sr(ITERATIONS-1 downto 1) <= vld_sr(ITERATIONS-2 downto 0);
-    if imag_quadrant_mod > 0 then
-      theta_s(0) <= theta_table(0);
-    else
-      theta_s(0) <= resize(to_sfixed(0, theta_table(0)'high, theta_table(0)'low) - theta_table(0), theta_s(0)'high,theta_s(0)'low);
-    end if;
-
     x_s(0) <= real_quadrant_mod;
     y_s(0) <= imag_quadrant_mod;
+    theta_s(0) <= (others => '0');
 
     for iter in 1 to ITERATIONS-1 loop
       if y_s(iter-1) > 0 then
-        theta_s(iter) <= resize(theta_s(iter-1) + theta_table(iter),theta_s(iter)'high,theta_s(iter)'low);
-        x_s(iter) <= x_s(iter-1) + shift_right(y_s(iter-1),iter);
-        y_s(iter) <= y_s(iter-1) - shift_right(x_s(iter-1),iter);
+        theta_s(iter) <= resize(theta_s(iter-1) + theta_table(iter-1), theta_s(iter)'high,theta_s(iter)'low);
+        x_s(iter) <= x_s(iter-1) + shift_right(y_s(iter-1),iter-1);
+        y_s(iter) <= y_s(iter-1) - shift_right(x_s(iter-1),iter-1);
       else
-        theta_s(iter) <= resize(theta_s(iter-1) - theta_table(iter), theta_s(iter)'high,theta_s(iter)'low);
-        x_s(iter) <= x_s(iter-1) - shift_right(y_s(iter-1),iter);
-        y_s(iter) <= y_s(iter-1) + shift_right(x_s(iter-1),iter);
+        theta_s(iter) <= resize(theta_s(iter-1) - theta_table(iter-1), theta_s(iter)'high,theta_s(iter)'low);
+        x_s(iter) <= x_s(iter-1) - shift_right(y_s(iter-1),iter-1);
+        y_s(iter) <= y_s(iter-1) + shift_right(x_s(iter-1),iter-1);
       end if;
 
     end loop;
   end if;
 end process;
-
 
 -- change later
 phase_o <= signed(to_slv(theta_s(ITERATIONS-1)));
