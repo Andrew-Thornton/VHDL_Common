@@ -46,3 +46,7 @@ jobs:
       - name: Run Complex Mult tests
         working-directory: tb/complex_mult_tb
         run: make
+
+      - name: Run Atan2 Cordic tests
+        working-directory: tb/atan2_cordic_tb
+        run: make
