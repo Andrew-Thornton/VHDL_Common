@@ -83,13 +83,13 @@ async def test_pi_on_4(dut):
         await hold(dut)
         if dut.vld_o.value == 1:
             output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
-            expected_value = 0.5
+            expected_value = (math.atan2(1000,1000))/math.pi
             dut._log.info(f"Testbench output_value : {output_value}")
             dut._log.info(f"Expected value         : {expected_value}")
             error = (abs(output_value-expected_value)/expected_value) * 100
-            dut._log.info(f"error                  : {error}%\n")
-            assert error < 0.1
-    await ClockCycles(dut.clk_i,10)
+            dut._log.info(f"error                  : {error:+.2f} %\n")
+            assert abs(error) < 0.1
+    await ClockCycles(dut.clk_i,40)
 
 @cocotb.test()
 async def test_neg_pi_on_4(dut):
@@ -110,13 +110,13 @@ async def test_neg_pi_on_4(dut):
         await hold(dut)
         if dut.vld_o.value == 1:
             output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
-            expected_value = -0.5
+            expected_value = (math.atan2(-1000,1000))/math.pi
             dut._log.info(f"Testbench output_value : {output_value}")
             dut._log.info(f"Expected value         : {expected_value}")
             error = (abs(output_value-expected_value)/expected_value) * 100
-            dut._log.info(f"error                  : {error}%\n")
-            assert error < 0.1
-    await ClockCycles(dut.clk_i,10)
+            dut._log.info(f"error                  : {error:+.2f}%\n")
+            assert abs(error) < 0.1
+    await ClockCycles(dut.clk_i,40)
 
 @cocotb.test()
 async def test_quad3_pi_on_4(dut):
@@ -137,13 +137,13 @@ async def test_quad3_pi_on_4(dut):
         await hold(dut)
         if dut.vld_o.value == 1:
             output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
-            expected_value = 0.5
+            expected_value = (math.atan2(-1000,-1000))/math.pi
             dut._log.info(f"Testbench output_value : {output_value}")
             dut._log.info(f"Expected value         : {expected_value}")
             error = (abs(output_value-expected_value)/expected_value) * 100
-            dut._log.info(f"error                  : {error}%\n")
-            assert error < 0.1
-    await ClockCycles(dut.clk_i,10)
+            dut._log.info(f"error                  : {error:+.2f}%\n")
+            assert abs(error) < 0.1
+    await ClockCycles(dut.clk_i,40)
 
 @cocotb.test()
 async def test_quad2_neg_pi_on_4(dut):
@@ -164,10 +164,10 @@ async def test_quad2_neg_pi_on_4(dut):
         await hold(dut)
         if dut.vld_o.value == 1:
             output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
-            expected_value = -0.5
+            expected_value = (math.atan2(1000,-1000))/math.pi
             dut._log.info(f"Testbench output_value : {output_value}")
             dut._log.info(f"Expected value         : {expected_value}")
             error = (abs(output_value-expected_value)/expected_value) * 100
-            dut._log.info(f"error                  : {error}%\n")
-            assert error < 0.1
-    await ClockCycles(dut.clk_i,10)
+            dut._log.info(f"error                  : {error:+.2f}%\n")
+            assert abs(error) < 0.1
+    await ClockCycles(dut.clk_i,40)
