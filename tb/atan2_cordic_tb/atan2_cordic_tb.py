@@ -89,6 +89,85 @@ async def test_pi_on_4(dut):
             error = (abs(output_value-expected_value)/expected_value) * 100
             dut._log.info(f"error                  : {error}%\n")
             assert error < 0.1
+    await ClockCycles(dut.clk_i,10)
 
+@cocotb.test()
+async def test_neg_pi_on_4(dut):
+    await initialise(dut)
+    cocotb.start_soon(Clock(dut.clk_i, CLOCK_PERIOD_NS, unit="ns").start())
+    await reset(dut)
+    dut.real_i.value = 1000
+    dut.imag_i.value = -1000
+    dut.vld_i.value = 1
+    await RisingEdge(dut.clk_i)
+    dut.real_i.value = 0
+    dut.imag_i.value = 0
+    dut.vld_i.value = 0
+    OUTPUT_DATA_W = dut.OUTPUT_DATA_W.value
+    await RisingEdge(dut.clk_i)
+    for i in range(1000):
+        await RisingEdge(dut.clk_i)
+        await hold(dut)
+        if dut.vld_o.value == 1:
+            output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
+            expected_value = -0.5
+            dut._log.info(f"Testbench output_value : {output_value}")
+            dut._log.info(f"Expected value         : {expected_value}")
+            error = (abs(output_value-expected_value)/expected_value) * 100
+            dut._log.info(f"error                  : {error}%\n")
+            assert error < 0.1
+    await ClockCycles(dut.clk_i,10)
 
-    await ClockCycles(dut.clk_i,40)
+@cocotb.test()
+async def test_quad3_pi_on_4(dut):
+    await initialise(dut)
+    cocotb.start_soon(Clock(dut.clk_i, CLOCK_PERIOD_NS, unit="ns").start())
+    await reset(dut)
+    dut.real_i.value = -1000
+    dut.imag_i.value = -1000
+    dut.vld_i.value = 1
+    await RisingEdge(dut.clk_i)
+    dut.real_i.value = 0
+    dut.imag_i.value = 0
+    dut.vld_i.value = 0
+    OUTPUT_DATA_W = dut.OUTPUT_DATA_W.value
+    await RisingEdge(dut.clk_i)
+    for i in range(1000):
+        await RisingEdge(dut.clk_i)
+        await hold(dut)
+        if dut.vld_o.value == 1:
+            output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
+            expected_value = 0.5
+            dut._log.info(f"Testbench output_value : {output_value}")
+            dut._log.info(f"Expected value         : {expected_value}")
+            error = (abs(output_value-expected_value)/expected_value) * 100
+            dut._log.info(f"error                  : {error}%\n")
+            assert error < 0.1
+    await ClockCycles(dut.clk_i,10)
+
+@cocotb.test()
+async def test_quad2_neg_pi_on_4(dut):
+    await initialise(dut)
+    cocotb.start_soon(Clock(dut.clk_i, CLOCK_PERIOD_NS, unit="ns").start())
+    await reset(dut)
+    dut.real_i.value = -1000
+    dut.imag_i.value = 1000
+    dut.vld_i.value = 1
+    await RisingEdge(dut.clk_i)
+    dut.real_i.value = 0
+    dut.imag_i.value = 0
+    dut.vld_i.value = 0
+    OUTPUT_DATA_W = dut.OUTPUT_DATA_W.value
+    await RisingEdge(dut.clk_i)
+    for i in range(1000):
+        await RisingEdge(dut.clk_i)
+        await hold(dut)
+        if dut.vld_o.value == 1:
+            output_value = (dut.phase_o.value.to_signed())*(2**(-(OUTPUT_DATA_W-1)))
+            expected_value = -0.5
+            dut._log.info(f"Testbench output_value : {output_value}")
+            dut._log.info(f"Expected value         : {expected_value}")
+            error = (abs(output_value-expected_value)/expected_value) * 100
+            dut._log.info(f"error                  : {error}%\n")
+            assert error < 0.1
+    await ClockCycles(dut.clk_i,10)
