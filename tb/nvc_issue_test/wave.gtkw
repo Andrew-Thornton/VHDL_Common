@@ -1,0 +1,30 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Sat Jul 18 06:46:46 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/nvc_issue_test/wave.vcd"
+[dumpfile_mtime] "Sat Jul 18 06:45:39 2026"
+[dumpfile_size] 4575
+[savefile] "/home/andrew/code/VHDL_Common/tb/nvc_issue_test/wave.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-27.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 209
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 154
+@28
+issue_tb.tb_clk
+@22
+issue_tb.tb_imag[15:0]
+issue_tb.tb_phase[31:0]
+@28
+issue_tb.tb_phase_vld
+@22
+issue_tb.tb_real[15:0]
+@28
+issue_tb.tb_srst
+issue_tb.tb_vld
+[pattern_trace] 1
+[pattern_trace] 0

@@ -18,18 +18,8 @@ entity issue_tb is
 end issue_tb;
 
 architecture test_bench of issue_tb is
-
-  -- component and_gate is
-  --   port(
-  --     clk_i  : in  std_logic;
-  --     srst_i : in  std_logic;
-  --     a_i    : in  std_logic;
-  --     b_i    : in  std_logic;
-  --     c_o    : out std_logic
-  --   );
-  -- end component and_gate;
   
-  constant CLOCK_FREQ_MHZ : real := 1.0;
+  constant CLOCK_FREQ_MHZ : real := 100.0;
   constant CLOCK_PERIOD   : time := (1.0/CLOCK_FREQ_MHZ) * 1.0 us;
   constant CLOCK_HOLD     : time := CLOCK_PERIOD/10.0;
   
