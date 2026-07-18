@@ -43,11 +43,11 @@ architecture rtl of atan2_cordic is
   signal quadrant_offset   : sfixed(0 downto -(OUTPUT_DATA_W-1)) := POS_PI;
   signal vld_z             : std_logic := '0';
 
-  type array_sfixed_out_width_t is array(natural range <>) of sfixed(0 downto -(OUTPUT_DATA_W-1));
+  type array_sfixed_t is array(natural range <>) of sfixed;
 
-  function gen_atan2_theta_table(iters : positive) return array_sfixed_out_width_t is
+  function gen_atan2_theta_table(iters : positive) return array_sfixed_t is
     variable theta_real  : real;
-    variable theta_table : array_sfixed_out_width_t(0 to iters-1);
+    variable theta_table : array_sfixed_t(0 to iters-1)(0 downto -31);
   begin
     for i in 0 to iters-1 loop
       theta_real := (arctan(1.0 / (2.0**i))) * MATH_1_OVER_PI;
@@ -56,16 +56,16 @@ architecture rtl of atan2_cordic is
     return theta_table;
   end function;
 
-  constant theta_table : array_sfixed_out_width_t(0 to ITERATIONS-1) := gen_atan2_theta_table(ITERATIONS);
-  signal debug_theta_table : array_sfixed_out_width_t(0 to ITERATIONS-1) := theta_table; 
+  constant theta_table : array_sfixed_t(0 to ITERATIONS-1)(0 downto -31) := gen_atan2_theta_table(ITERATIONS);
+  signal debug_theta_table : array_sfixed_t(0 to ITERATIONS-1)(0 downto -31) := theta_table; 
 
   type array_signed_t is array(natural range <>) of signed;
   signal x_s : array_signed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal y_s : array_signed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
-  signal theta_s : array_sfixed_out_width_t(0 to ITERATIONS-1) := (others => (others => '0'));
+  signal theta_s : array_sfixed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal vld_sr : std_logic_vector(ITERATIONS downto 0) := (others => '0');
 
-  signal quadrant_offset_sr : array_sfixed_out_width_t(0 to ITERATIONS-1) := (others => (others => '0'));
+  signal quadrant_offset_sr : array_sfixed_t(0 to ITERATIONS-1)(INPUT_DATA_W-1 downto 0) := (others => (others => '0'));
   signal quadrant_modified : sfixed(0 downto -(OUTPUT_DATA_W-1)) := (others => '0');
 
 begin
