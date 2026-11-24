@@ -17,7 +17,7 @@ jobs:
       - name: Install NVC
         uses: nickg/setup-nvc@v1
         with:
-          version: '1.20.1'
+          version: latest
 
       - name: Set up Python
         uses: actions/setup-python@v6
