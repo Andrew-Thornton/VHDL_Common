@@ -50,3 +50,7 @@ jobs:
       - name: Run Atan2 Cordic tests
         working-directory: tb/atan2_cordic_tb
         run: make
+
+      - name: Run FIR Filter tests
+        working-directory: tb/fir_filter_tb
+        run: make

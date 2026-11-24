@@ -1,0 +1,95 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Wed Nov 25 14:32:41 2026
+[*]
+[dumpfile] "/home/andrew/code/VHDL_Common/tb/fir_filter_tb/wave.vcd"
+[dumpfile_mtime] "Wed Nov 25 14:32:05 2026"
+[dumpfile_size] 10961
+[savefile] "/home/andrew/code/VHDL_Common/tb/fir_filter_tb/wave.gtkw"
+[timestart] 0
+[size] 1920 988
+[pos] -1 -1
+*-30.000000 107300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 438
+[signals_width] 222
+[sst_expanded] 1
+[sst_vpaned_height] 290
+@28
+fir_filter.clk_i
+fir_filter.srst_i
+@420
+fir_filter.data_i[15:0]
+@8420
+fir_filter.data_i[15:0]
+@20000
+-
+-
+-
+-
+@28
+fir_filter.vld_i
+@420
+fir_filter.data_o[15:0]
+@8420
+fir_filter.data_o[15:0]
+@20000
+-
+-
+-
+@20001
+-
+@28
+fir_filter.vld_o
+@200
+-terms
+@420
+fir_filter.accum_terms[0][32:0]
+fir_filter.accum_terms[1][32:0]
+fir_filter.accum_terms[2][32:0]
+fir_filter.accum_terms[3][32:0]
+fir_filter.accum_terms[4][32:0]
+fir_filter.accum_terms[5][32:0]
+fir_filter.accum_terms[6][32:0]
+fir_filter.accum_terms[7][32:0]
+fir_filter.accum_terms[8][32:0]
+fir_filter.accum_terms[9][32:0]
+fir_filter.accum_terms[10][32:0]
+fir_filter.accum_terms[11][32:0]
+fir_filter.accum_terms[12][32:0]
+fir_filter.accum_terms[13][32:0]
+fir_filter.accum_terms[14][32:0]
+fir_filter.dbg_mult_terms[0][28:0]
+fir_filter.dbg_mult_terms[1][28:0]
+fir_filter.dbg_mult_terms[2][28:0]
+fir_filter.dbg_mult_terms[3][28:0]
+fir_filter.dbg_mult_terms[4][28:0]
+fir_filter.dbg_mult_terms[5][28:0]
+fir_filter.dbg_mult_terms[6][28:0]
+fir_filter.dbg_mult_terms[7][28:0]
+fir_filter.dbg_mult_terms[8][28:0]
+fir_filter.dbg_mult_terms[9][28:0]
+fir_filter.dbg_mult_terms[10][28:0]
+fir_filter.dbg_mult_terms[11][28:0]
+fir_filter.dbg_mult_terms[12][28:0]
+fir_filter.dbg_mult_terms[13][28:0]
+@22
+fir_filter.dbg_mult_terms[14][28:0]
+@420
+fir_filter.dbg_coef[0][12:0]
+fir_filter.dbg_coef[1][12:0]
+fir_filter.dbg_coef[2][12:0]
+fir_filter.dbg_coef[3][12:0]
+fir_filter.dbg_coef[4][12:0]
+fir_filter.dbg_coef[5][12:0]
+fir_filter.dbg_coef[6][12:0]
+fir_filter.dbg_coef[7][12:0]
+fir_filter.dbg_coef[8][12:0]
+fir_filter.dbg_coef[9][12:0]
+fir_filter.dbg_coef[10][12:0]
+fir_filter.dbg_coef[11][12:0]
+fir_filter.dbg_coef[12][12:0]
+fir_filter.dbg_coef[13][12:0]
+fir_filter.dbg_coef[14][12:0]
+fir_filter.dbg_coef[0][12:0]
+[pattern_trace] 1
+[pattern_trace] 0
