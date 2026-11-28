@@ -6,6 +6,7 @@
 -- Rev  Author       Date         Description
 -- 1.0  A. Thornton  2023-Dec-08  Testbench creation (not_gate_tb.vhd)
 -- 2.0  A. Thornton  2026-Nov-28  Ported to cocotb, simulated with NVC
+-- 2.1  A. Thornton  2026-Nov-28  pytest runner replaces the Makefile
 -------------------------------------------------------------------------------
 -- Description
 --   cocotb testbench for the not_gate entity, equivalent to the legacy VHDL
@@ -27,12 +28,26 @@
 --   test_not_gate_reset
 --       Holds reset with inputs that would drive b_o high, checks b_o
 --       stays low, then releases reset and checks b_o goes high.
+--
+--   Running
+--   -------
+--   test_not_gate_runner (marked prod) builds the DUT with NVC and runs
+--   the cocotb tests above inside the simulator. From the repo root:
+--
+--       pytest -m prod                 every testbench
+--       pytest tb/logic/not_gate_tb    this testbench only
+--
+--   wave.vcd is written next to this file, build output to sim_build/.
 -------------------------------------------------------------------------------
 """
 
+from pathlib import Path
+
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -111,3 +126,32 @@ async def test_not_gate_reset(dut):
     await release_reset(dut)
     b = await sample_after_edge(dut)
     assert b == 1, f"b_o was {b} after reset with a_i={a}, expected 1"
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[2] / "src"  # tb/logic/not_gate_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_not_gate_runner():
+    """Build not_gate with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[SRC_DIR / "logic" / "not_gate.vhd"],
+        hdl_toplevel="not_gate",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="not_gate",
+        test_module="not_gate_tb",
+        test_dir=TB_DIR,
+        test_args=["--wave=wave.vcd"],
+    )

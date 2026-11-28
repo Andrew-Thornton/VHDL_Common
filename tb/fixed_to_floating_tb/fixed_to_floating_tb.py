@@ -16,12 +16,15 @@
 
 import math
 import itertools
+from pathlib import Path
 import numpy as np
 
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
 from cocotb.types import LogicArray
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -86,3 +89,45 @@ async def test_simple_number(dut):
     await ClockCycles(dut.clk_i, PIPELINE_DEPTH)
     await Timer(CLOCK_HOLD_NS, unit="ns")
 
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/fixed_to_floating_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_fixed_to_floating_runner():
+    """Build fixed_to_floating with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[
+            SRC_DIR / "floating_point" / "common_int_tools_pkg.vhd",
+            SRC_DIR / "floating_point" / "common_float_tools_pkg.vhd",
+        ],
+        hdl_library="vhdl_common",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.build(
+        sources=[SRC_DIR / "floating_point" / "fixed_to_floating.vhd"],
+        hdl_toplevel="fixed_to_floating",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="fixed_to_floating",
+        test_module="fixed_to_floating_tb",
+        test_dir=TB_DIR,
+        parameters={
+            "INT_BITS": 4,
+            "FRAC_BITS": 4,
+        },
+        test_args=["--wave=wave.vcd"],
+    )

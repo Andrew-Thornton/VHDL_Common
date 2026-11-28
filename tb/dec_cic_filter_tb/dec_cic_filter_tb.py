@@ -13,11 +13,15 @@
 """
 
 import math
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -356,3 +360,52 @@ async def test_cic_decimator_across_frequencies(dut):
     plt.savefig(plot_path, dpi=150)
     plt.close(fig)
     dut._log.info(f"Frequency response plot saved to {plot_path}")
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/dec_cic_filter_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_dec_cic_filter_runner():
+    """Build dec_cic_filter with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[
+            SRC_DIR / "dsp" / "math_utils_pkg.vhd",
+            SRC_DIR / "dsp" / "comb_filter_stage.vhd",
+            SRC_DIR / "dsp" / "comb_filter.vhd",
+            SRC_DIR / "dsp" / "raw_decimator.vhd",
+            SRC_DIR / "dsp" / "integrator_stage.vhd",
+            SRC_DIR / "dsp" / "integrator.vhd",
+        ],
+        hdl_library="vhdl_common",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.build(
+        sources=[SRC_DIR / "dsp" / "dec_cic_filter.vhd"],
+        hdl_toplevel="dec_cic_filter",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="dec_cic_filter",
+        test_module="dec_cic_filter_tb",
+        test_dir=TB_DIR,
+        parameters={
+            "DECIMATION_RATE_R": 2,
+            "INPUT_DATA_W": 16,
+            "DIFFERENTIAL_DELAY": 1,
+            "NUMBER_TAPS_N": 1,
+        },
+        test_args=["--wave=wave.vcd", "--dump-arrays"],
+    )

@@ -13,11 +13,14 @@
 
 import math
 import itertools
+from pathlib import Path
 import numpy as np
 
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
+from cocotb_tools.runner import get_runner
 
 
 PIPELINE_DEPTH  = 2      # DUT latency in clock cycles
@@ -171,3 +174,32 @@ async def test_quad2_neg_pi_on_4(dut):
             dut._log.info(f"error                  : {error:+.2f}%\n")
             assert abs(error) < 0.1
     await ClockCycles(dut.clk_i,40)
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/atan2_cordic_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_atan2_cordic_runner():
+    """Build atan2_cordic with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[SRC_DIR / "dsp" / "atan2_cordic.vhd"],
+        hdl_toplevel="atan2_cordic",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="atan2_cordic",
+        test_module="atan2_cordic_tb",
+        test_dir=TB_DIR,
+        test_args=["--wave=wave.vcd", "--dump-arrays"],
+    )

@@ -42,11 +42,14 @@
 
 import math
 import itertools
+from pathlib import Path
 import numpy as np
 
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -339,4 +342,33 @@ async def test_float_add_cross_matrix(dut):
         f"=== Cross-matrix complete: {pass_count} PASS  "
         f"{fail_count} FAIL  {skip_count} SKIP  "
         f"(total {n}) ==="
+    )
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/float_add_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_float_add_runner():
+    """Build float_add with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[SRC_DIR / "floating_point" / "float_add.vhd"],
+        hdl_toplevel="float_add",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="float_add",
+        test_module="float_add_tb",
+        test_dir=TB_DIR,
+        test_args=["--wave=wave.vcd"],
     )

@@ -13,11 +13,14 @@
 
 import math
 import itertools
+from pathlib import Path
 import numpy as np
 
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -109,3 +112,32 @@ async def test_complex_mult_matrix(dut):
     await ClockCycles(dut.clk_i,PIPELINE_DEPTH+1)
     output_checker_task = cocotb.start_soon(data_checker(dut,test_set))
     await output_checker_task
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/complex_mult_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_complex_mult_runner():
+    """Build complex_mult with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[SRC_DIR / "dsp" / "complex_mult.vhd"],
+        hdl_toplevel="complex_mult",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="complex_mult",
+        test_module="complex_mult_tb",
+        test_dir=TB_DIR,
+        test_args=["--wave=wave.vcd", "--dump-arrays"],
+    )

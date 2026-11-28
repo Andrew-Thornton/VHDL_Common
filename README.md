@@ -60,6 +60,17 @@ VHDL_Common/
    source .venv/bin/activate
    ```
 
+### Running the testbenches
+
+Each testbench under `tb/` is a cocotb module with a pytest runner that builds the design with NVC. From the repository root:
+
+```bash
+pytest -n auto -m prod            # every production testbench, in parallel (as CI does)
+pytest tb/fir_filter_tb           # a single testbench
+```
+
+Waveforms (`wave.vcd`) and any plots are written to the testbench's directory; build output goes to its `sim_build/`.
+
 ---
 
 ## License

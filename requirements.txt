@@ -1,5 +1,6 @@
 cocotb==2.1.0
 pytest==9.2.0
+pytest-xdist==3.8.0
 find_libpython==0.5.1
 numpy==2.4.4
 matplotlib==3.10.9
