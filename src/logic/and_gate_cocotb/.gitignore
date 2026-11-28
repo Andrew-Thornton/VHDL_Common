@@ -1,7 +1,0 @@
-#ignore everything
-*
-
-#keep python and makefiles
-!*.py
-!Makefiles
-!.gitignore

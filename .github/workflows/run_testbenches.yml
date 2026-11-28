@@ -54,3 +54,27 @@ jobs:
       - name: Run FIR Filter tests
         working-directory: tb/fir_filter_tb
         run: make
+
+      - name: Run AND Gate tests
+        working-directory: tb/logic/and_gate_tb
+        run: make
+
+      - name: Run NAND Gate tests
+        working-directory: tb/logic/nand_gate_tb
+        run: make
+
+      - name: Run NOR Gate tests
+        working-directory: tb/logic/nor_gate_tb
+        run: make
+
+      - name: Run NOT Gate tests
+        working-directory: tb/logic/not_gate_tb
+        run: make
+
+      - name: Run OR Gate tests
+        working-directory: tb/logic/or_gate_tb
+        run: make
+
+      - name: Run XOR Gate tests
+        working-directory: tb/logic/xor_gate_tb
+        run: make
