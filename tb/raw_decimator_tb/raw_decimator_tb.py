@@ -13,9 +13,13 @@
 -------------------------------------------------------------------------------
 """
 
+from pathlib import Path
+
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -112,3 +116,43 @@ async def test_raw_decimator(dut):
     await Timer(CLOCK_HOLD_NS, unit="ns")
 
     dut._log.info(f"Test_raw_decimator complete")
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/raw_decimator_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_raw_decimator_runner():
+    """Build raw_decimator with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[SRC_DIR / "dsp" / "math_utils_pkg.vhd"],
+        hdl_library="vhdl_common",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.build(
+        sources=[SRC_DIR / "dsp" / "raw_decimator.vhd"],
+        hdl_toplevel="raw_decimator",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="raw_decimator",
+        test_module="raw_decimator_tb",
+        test_dir=TB_DIR,
+        parameters={
+            "DECIMATION_RATE_R": 2,
+            "INPUT_DATA_W": 16,
+        },
+        test_args=["--wave=wave.vcd"],
+    )

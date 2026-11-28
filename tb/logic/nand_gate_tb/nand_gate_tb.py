@@ -6,6 +6,7 @@
 -- Rev  Author       Date         Description
 -- 1.0  A. Thornton  2023-Dec-08  Testbench creation (nand_gate_tb.vhd)
 -- 2.0  A. Thornton  2026-Nov-28  Ported to cocotb, simulated with NVC
+-- 2.1  A. Thornton  2026-Nov-28  pytest runner replaces the Makefile
 -------------------------------------------------------------------------------
 -- Description
 --   cocotb testbench for the nand_gate entity, equivalent to the legacy VHDL
@@ -27,12 +28,26 @@
 --   test_nand_gate_reset
 --       Holds reset with inputs that would drive c_o high, checks c_o
 --       stays low, then releases reset and checks c_o goes high.
+--
+--   Running
+--   -------
+--   test_nand_gate_runner (marked prod) builds the DUT with NVC and runs
+--   the cocotb tests above inside the simulator. From the repo root:
+--
+--       pytest -m prod                  every testbench
+--       pytest tb/logic/nand_gate_tb    this testbench only
+--
+--   wave.vcd is written next to this file, build output to sim_build/.
 -------------------------------------------------------------------------------
 """
 
+from pathlib import Path
+
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
+from cocotb_tools.runner import get_runner
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -115,3 +130,32 @@ async def test_nand_gate_reset(dut):
     await release_reset(dut)
     c = await sample_after_edge(dut)
     assert c == 1, f"c_o was {c} after reset with a_i={a}, b_i={b}, expected 1"
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[2] / "src"  # tb/logic/nand_gate_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_nand_gate_runner():
+    """Build nand_gate with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[SRC_DIR / "logic" / "nand_gate.vhd"],
+        hdl_toplevel="nand_gate",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="nand_gate",
+        test_module="nand_gate_tb",
+        test_dir=TB_DIR,
+        test_args=["--wave=wave.vcd"],
+    )

@@ -36,4 +36,5 @@ sim_build/
 .venv/
 
 results.xml
+*.result.xml
 

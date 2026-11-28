@@ -20,11 +20,13 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")  # headless backend: simulations rarely have a display
 import matplotlib.pyplot as plt
- 
+
+import pytest
 import cocotb
 from cocotb.clock    import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, Timer
 from cocotb.types import LogicArray
+from cocotb_tools.runner import get_runner
 
 from fir_filter_model import fir_model, max_output_magnitude
 
@@ -420,4 +422,48 @@ async def model_comparison_test(dut):
     )
 
     dut._log.info("=== test complete===")
- 
+
+
+# ---------------------------------------------------------------------------
+# pytest runner
+# ---------------------------------------------------------------------------
+
+TB_DIR    = Path(__file__).resolve().parent
+SRC_DIR   = TB_DIR.parents[1] / "src"  # tb/fir_filter_tb -> repo root
+BUILD_DIR = TB_DIR / "sim_build"
+
+
+@pytest.mark.prod
+def test_fir_filter_runner():
+    """Build fir_filter with NVC and run the cocotb tests in this module."""
+    runner = get_runner("nvc")
+
+    runner.build(
+        sources=[
+            SRC_DIR / "common_pkg" / "common_types_pkg.vhd",
+            SRC_DIR / "dsp" / "fir_filter_pkg.vhd",
+            SRC_DIR / "dsp" / "math_utils_pkg.vhd",
+        ],
+        hdl_library="vhdl_common",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.build(
+        sources=[SRC_DIR / "dsp" / "fir_filter.vhd"],
+        hdl_toplevel="fir_filter",
+        build_args=["--std=2008"],
+        build_dir=BUILD_DIR,
+    )
+
+    runner.test(
+        hdl_toplevel="fir_filter",
+        test_module="fir_filter_tb",
+        test_dir=TB_DIR,
+        parameters={
+            "INPUT_DATA_WIDTH": 16,
+            "OUTPUT_DATA_WIDTH": 16,
+            "SHIFT_RIGHT_BITS": 12,
+        },
+        test_args=["--wave=wave.vcd", "--dump-arrays"],
+    )
